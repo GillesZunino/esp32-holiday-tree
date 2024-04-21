@@ -6,6 +6,5 @@ sdkconfig
 sdkconfig.old
 
 # ESP-IDF build intermediates and output
-dependencies.lock
 /managed_components/
 /build/
