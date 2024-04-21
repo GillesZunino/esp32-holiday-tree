@@ -1,0 +1,6 @@
+# -----------------------------------------------------------------------------------
+# Copyright 2024, Gilles Zunino
+# -----------------------------------------------------------------------------------
+
+# Raise IPC task stack size to allow gpio_install_isr_service() to operate properly
+CONFIG_IPC_TASK_STACK_SIZE=1280
