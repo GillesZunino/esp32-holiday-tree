@@ -5,6 +5,10 @@
 sdkconfig
 sdkconfig.old
 
+# ESP-IDF debugger adapter intermediates
+debug.log
+esp-idf-vscode-generated.gdb
+
 # ESP-IDF build intermediates and output
 /managed_components/
 /build/
