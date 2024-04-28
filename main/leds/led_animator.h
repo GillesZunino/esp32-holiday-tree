@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <esp_err.h>
+
 #include "leds/led_known_effects.h"
 
 esp_err_t start_led_strip_effect(LEDEffect_t led_effect);
