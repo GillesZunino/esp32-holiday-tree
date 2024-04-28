@@ -1,7 +1,8 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
     "idf.telemetry": false,
-    
+    "idf.showOnboardingOnInit": false,
+
     "idf.gitPathWin": "\\Git\\cmd\\git.exe",
     "idf.espIdfPathWin": "D:\\espressif\\v5.2.1\\esp-idf",
     "idf.pythonBinPathWin": "D:\\espressif\\tools\\python_env\\idf5.2_py3.11_env\\Scripts\\python.exe",
