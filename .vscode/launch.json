@@ -4,70 +4,74 @@
 
 {
   "version": "0.2.0",
-   "configurations": [
-   	{
-           "name": "GDB (JTAG)",
-           "type": "cppdbg",
-           "request": "launch",
+  "configurations": [
+    {
+      "name": "GDB | Monitor (JTAG + UART)",
+      "type": "cppdbg",
+      "request": "launch",
 
-           "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf",
+      "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf",
 
-           "linux": {
-               "MIMode": "gdb",
-               "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
-               "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
-            },
-            "osx": {
-               "MIMode": "gdb",
-               "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
-               "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
-            },
-            "windows": {
-               "MIMode": "gdb",
-               "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
-               "program": "${workspaceFolder}\\build\\${command:espIdf.getProjectName}.elf"
-            },
+      "linux": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
+      },
+      "osx": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
+      },
+      "windows": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "program": "${workspaceFolder}\\build\\${command:espIdf.getProjectName}.elf"
+      },
 
-           "cwd": "${workspaceFolder}",
-           "environment": [{ "name": "PATH", "value": "${config:idf.customExtraPaths}" }],
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        { "name": "PATH", "value": "${config:idf.customExtraPaths}" }
+      ],
 
-           "setupCommands": [
-               { "text": "target extended-remote :3333" },
-               { "text": "set mem inaccessible-by-default off" },
-               { "text": "set remote hardware-watchpoint-limit 2"},
-               { "text": "monitor reset halt" },
-               { "text": "maintenance flush register-cache" }
-           ],
+      "preLaunchTask": "Monitor: Start the monitor",
 
-           "externalConsole": false,
-           "logging": {
-               "exceptions": true,
-               "programOutput": true,
-               "moduleLoad": true,
-               "trace": false,
-               "traceResponse": false,
-               "engineLogging": false,
-               "natvisDiagnostics": false
-            }
-       },
-       {
-           "name": "IDF (py)",
-           "type": "espidf",
-           "request": "launch",
-           "logLevel": 1,
-           "mode": "auto",
-           "tmoScaleFactor": 5,
-           "verifyAppBinBeforeDebug": false,
-           "initGdbCommands": [
-               "target extended-remote :3333",
-               "set mem inaccessible-by-default off",
-               "set remote hardware-watchpoint-limit 2",
-               "monitor reset halt",
-               "maintenance flush register-cache",
-               // ESP-IDF debugger adapter currently requires this breakpoint
-               "thb app_main",
-               "continue"
-            ]
-       }
-   ]
+      "setupCommands": [
+        { "text": "target extended-remote :3333" },
+        { "text": "set mem inaccessible-by-default off" },
+        { "text": "set remote hardware-watchpoint-limit 2" },
+        { "text": "monitor reset halt" },
+        { "text": "maintenance flush register-cache" }
+      ],
+
+      "externalConsole": false,
+      "logging": {
+        "exceptions": true,
+        "programOutput": true,
+        "moduleLoad": true,
+        "trace": false,
+        "traceResponse": false,
+        "engineLogging": false,
+        "natvisDiagnostics": false
+      }
+    },
+    {
+      "name": "EIDF | Monitor (Adapter + UART)",
+      "type": "espidf",
+      "request": "launch",
+      "logLevel": 1,
+      "mode": "auto",
+      "tmoScaleFactor": 5,
+      "verifyAppBinBeforeDebug": false,
+      "initGdbCommands": [
+        "target extended-remote :3333",
+        "set mem inaccessible-by-default off",
+        "set remote hardware-watchpoint-limit 2",
+        "monitor reset halt",
+        "maintenance flush register-cache",
+        // ESP-IDF debugger adapter currently requires this breakpoint
+        "thb app_main",
+        "continue"
+      ]
+    }
+  ]
 }
