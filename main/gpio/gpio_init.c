@@ -11,7 +11,7 @@
 #include "gpio_init.h"
 
 
-static const char* GPIO_ISR_TAG = "GPIO_ISR";
+static const char* GPIO_ISR_TAG = "gpio_isr";
 
 static QueueHandle_t s_gpio_isr_dispatch_queue = NULL;
 static TaskHandle_t s_gpio_isr_taskHandle = NULL;
