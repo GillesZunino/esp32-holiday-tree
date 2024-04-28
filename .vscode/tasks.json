@@ -1,0 +1,57 @@
+// -----------------------------------------------------------------------------------
+// Copyright 2024, Gilles Zunino
+// -----------------------------------------------------------------------------------
+
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Monitor: Start the monitor",
+      "type": "shell",
+
+      "isBackground": true,
+
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} monitor",
+      "linux": {
+        "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} monitor",
+        "options": {
+          "env": {
+            "PATH": "${config:idf.pythonBinPath};${config:idf.customExtraPaths};${env:PATH}",
+            "IDF_TOOLS_PATH": "${config:idf.toolsPath}"
+          }
+        }
+      },
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py -p ${config:idf.portWin} monitor",
+        "options": {
+          "env": {
+            "PATH": "${config:idf.pythonBinPathWin};${config:idf.customExtraPaths};${env:PATH}",
+            "IDF_TOOLS_PATH": "${config:idf.toolsPathWin}"
+          }
+        }
+      },
+
+      "presentation": {
+        "focus": true,
+        "revealProblems": "onProblem",
+        "panel": "shared"
+      },
+
+      "problemMatcher": [
+        {
+          "owner": "none",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^Setting IDF_PATH(.*)$",
+            "endsPattern": "^--- Quit: (.*) ---$"
+          },
+          "pattern": {
+            "regexp": "ERROR: (.*)",
+            "message": 1
+          }
+        }
+      ]
+    },
+  ]
+}
