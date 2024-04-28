@@ -1,33 +1,32 @@
 {
-    "C_Cpp.intelliSenseEngine": "default",
-    "idf.telemetry": false,
-    "idf.showOnboardingOnInit": false,
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.telemetry": false,
+  "idf.showOnboardingOnInit": false,
 
-    "idf.gitPathWin": "\\Git\\cmd\\git.exe",
-    "idf.espIdfPathWin": "D:\\espressif\\v5.2.1\\esp-idf",
-    "idf.pythonBinPathWin": "D:\\espressif\\tools\\python_env\\idf5.2_py3.11_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "D:\\espressif\\tools",
-    "idf.customExtraPaths": "D:\\espressif\\tools\\tools\\xtensa-esp-elf-gdb\\12.1_20231023\\xtensa-esp-elf-gdb\\bin;D:\\espressif\\tools\\tools\\riscv32-esp-elf-gdb\\12.1_20231023\\riscv32-esp-elf-gdb\\bin;D:\\espressif\\tools\\tools\\xtensa-esp-elf\\esp-13.2.0_20230928\\xtensa-esp-elf\\bin;D:\\espressif\\tools\\tools\\riscv32-esp-elf\\esp-13.2.0_20230928\\riscv32-esp-elf\\bin;D:\\espressif\\tools\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;D:\\espressif\\tools\\tools\\cmake\\3.24.0\\bin;D:\\espressif\\tools\\tools\\openocd-esp32\\v0.12.0-esp32-20230921\\openocd-esp32\\bin;D:\\espressif\\tools\\tools\\ninja\\1.11.1;D:\\espressif\\tools\\tools\\idf-exe\\1.0.3;D:\\espressif\\tools\\tools\\ccache\\4.8\\ccache-4.8-windows-x86_64;D:\\espressif\\tools\\tools\\dfu-util\\0.11\\dfu-util-0.11-win64;D:\\espressif\\tools\\tools\\esp-rom-elfs\\20230320",
-    "idf.customExtraVars": {
-      "OPENOCD_SCRIPTS": "D:\\espressif\\tools\\tools\\openocd-esp32\\v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
-      "IDF_CCACHE_ENABLE": "1",
-      "ESP_ROM_ELF_DIR": "D:\\espressif\\tools\\tools\\esp-rom-elfs\\20230320/"
-    },
-    
-    "idf.adapterTargetName": "esp32",
+  "idf.gitPathWin": "\\Git\\cmd\\git.exe",
+  "idf.espIdfPathWin": "D:\\espressif\\v5.2.1\\esp-idf",
+  "idf.pythonBinPathWin": "D:\\espressif\\tools\\python_env\\idf5.2_py3.11_env\\Scripts\\python.exe",
+  "idf.toolsPathWin": "D:\\espressif\\tools",
+  "idf.customExtraPaths": "D:\\espressif\\tools\\tools\\xtensa-esp-elf-gdb\\12.1_20231023\\xtensa-esp-elf-gdb\\bin;D:\\espressif\\tools\\tools\\riscv32-esp-elf-gdb\\12.1_20231023\\riscv32-esp-elf-gdb\\bin;D:\\espressif\\tools\\tools\\xtensa-esp-elf\\esp-13.2.0_20230928\\xtensa-esp-elf\\bin;D:\\espressif\\tools\\tools\\riscv32-esp-elf\\esp-13.2.0_20230928\\riscv32-esp-elf\\bin;D:\\espressif\\tools\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;D:\\espressif\\tools\\tools\\cmake\\3.24.0\\bin;D:\\espressif\\tools\\tools\\openocd-esp32\\v0.12.0-esp32-20230921\\openocd-esp32\\bin;D:\\espressif\\tools\\tools\\ninja\\1.11.1;D:\\espressif\\tools\\tools\\idf-exe\\1.0.3;D:\\espressif\\tools\\tools\\ccache\\4.8\\ccache-4.8-windows-x86_64;D:\\espressif\\tools\\tools\\dfu-util\\0.11\\dfu-util-0.11-win64;D:\\espressif\\tools\\tools\\esp-rom-elfs\\20230320",
+  "idf.customExtraVars": {
+    "OPENOCD_SCRIPTS": "D:\\espressif\\tools\\tools\\openocd-esp32\\v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
+    "IDF_CCACHE_ENABLE": "1",
+    "ESP_ROM_ELF_DIR": "D:\\espressif\\tools\\tools\\esp-rom-elfs\\20230320/"
+  },
 
-    "idf.openOcdDebugLevel": 2,
-    "idf.openOcdConfigs": [
-      //
-      // Use one of the configurations below:
-      // * "openocd/esp32-ft2232hl-to-jtag.cfg" for ESP32 JTAG via USB to FT2232HL (2 channels)
-      // * "openocd/esp32-s3-builtin-usb-to-jtag.cfg" for ESP32-S3 built-in JTAG via USB to dev board
-      // 
-      "openocd/esp32-ft2232hl-to-jtag.cfg"
-      //"openocd/esp32-s3-builtin-usb-to-jtag.cfg"
-    ],
-  "idf.openOcdLaunchArgs": [
+  "idf.adapterTargetName": "esp32",
+
+  "idf.openOcdDebugLevel": 2,
+  "idf.openOcdConfigs": [
+    //
+    // Use one of the configurations below:
+    // * "openocd/esp32-ft2232hl-to-jtag.cfg" for ESP32 JTAG via USB to FT2232HL (2 channels)
+    // * "openocd/esp32-s3-builtin-usb-to-jtag.cfg" for ESP32-S3 built-in JTAG via USB to dev board
+    //
+    "openocd/esp32-ft2232hl-to-jtag.cfg"
+    //"openocd/esp32-s3-builtin-usb-to-jtag.cfg"
   ],
+  "idf.openOcdLaunchArgs": [],
 
   "idf.launchMonitorOnDebugSession": true,
   "idf.enableSizeTaskAfterBuildTask": true,
