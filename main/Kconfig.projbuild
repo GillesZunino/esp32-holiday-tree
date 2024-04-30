@@ -1,0 +1,62 @@
+# -----------------------------------------------------------------------------------
+# Copyright 2024, Gilles Zunino
+# -----------------------------------------------------------------------------------
+
+menu "Holiday Tree"
+
+    choice HOLIDAYTREE_HARDWARE
+        prompt "Hardware type"
+        default HOLIDAYTREE_HARDWARE_PRODUCTION
+        help
+            Select the type of hardware to compile for
+
+        config HOLIDAYTREE_HARDWARE_PRODUCTION
+            bool "SmartButton"
+            help
+                Select to compile for the SmartButton production hardware
+
+        config HOLIDAYTREE_HARDWARE_DEVELOPMENT
+            bool "Development board"
+            help
+                Select to compile for development boards. This option allows JTAG debugging
+    endchoice
+
+    config HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR
+        string "Device Name"
+        default "Holiday Tree"
+        help
+            Name of Bluetooth device
+
+    config HOLIDAYTREE_BR_EDR_LEGACY_PAIRING_REQUIRE_STATIC_PIN
+        bool "Require fixed pin during pairing"
+        depends on BT_CLASSIC_ENABLED
+        default y
+        help
+            If enabled, the correct pin must be presented during pairing. If disabled, 
+            any devices can pair without a pin
+
+    config HOLIDAYTREE_BR_EDR_STATIC_PIN_STR
+        string "Pin"
+        default "1234"
+        depends on HOLIDAYTREE_BR_EDR_LEGACY_PAIRING_REQUIRE_STATIC_PIN
+        help
+            Static pin to request when pairing
+
+    choice HOLIDAYTREE_A2DP_SINK_OUTPUT
+        prompt "A2DP Output"
+        default HOLIDAYTREE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+        help
+            Choose the A2DP output
+
+        config HOLIDAYTREE_A2DP_SINK_OUTPUT_INTERNAL_DAC
+            bool "Internal DAC"
+            help
+                Use the internal DAC
+
+        config HOLIDAYTREE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+            bool "I2S device on I2S0"
+            help
+                Use an external I2S device
+    endchoice
+
+endmenu
