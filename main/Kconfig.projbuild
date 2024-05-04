@@ -41,22 +41,5 @@ menu "Holiday Tree"
         depends on HOLIDAYTREE_BR_EDR_LEGACY_PAIRING_REQUIRE_STATIC_PIN
         help
             Static pin to request when pairing
-
-    choice HOLIDAYTREE_A2DP_SINK_OUTPUT
-        prompt "A2DP Output"
-        default HOLIDAYTREE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
-        help
-            Choose the A2DP output
-
-        config HOLIDAYTREE_A2DP_SINK_OUTPUT_INTERNAL_DAC
-            bool "Internal DAC"
-            help
-                Use the internal DAC
-
-        config HOLIDAYTREE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
-            bool "I2S device on I2S0"
-            help
-                Use an external I2S device
-    endchoice
-
+            
 endmenu
