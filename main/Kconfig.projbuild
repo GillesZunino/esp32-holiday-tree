@@ -6,7 +6,7 @@ menu "Holiday Tree"
 
     choice HOLIDAYTREE_HARDWARE
         prompt "Hardware type"
-        default HOLIDAYTREE_HARDWARE_PRODUCTION
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT
         help
             Select the type of hardware to compile for
 
@@ -29,7 +29,6 @@ menu "Holiday Tree"
 
     config HOLIDAYTREE_BR_EDR_LEGACY_PAIRING_REQUIRE_STATIC_PIN
         bool "Require fixed pin during pairing"
-        depends on BT_CLASSIC_ENABLED
         default y
         help
             If enabled, the correct pin must be presented during pairing. If disabled, 
