@@ -26,7 +26,7 @@ static TaskHandle_t xAnimateLEDTaskHandle = NULL;
 
 esp_err_t start_led_strip_effect(LEDEffect_t led_effect) {
     if (xAnimateLEDTaskHandle == NULL) {
-        BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 2048, NULL, 10, &xAnimateLEDTaskHandle);
+        BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 3072, NULL, 10, &xAnimateLEDTaskHandle);
         if (outcome != pdPASS) {
             xAnimateLEDTaskHandle = NULL;
             return ESP_FAIL;
