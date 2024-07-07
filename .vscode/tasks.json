@@ -11,9 +11,9 @@
 
       "isBackground": true,
 
-      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} monitor",
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py monitor --no-reset -p ${config:idf.port}",
       "linux": {
-        "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} monitor",
+        "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py monitor --no-reset -p ${config:idf.port",
         "options": {
           "env": {
             "PATH": "${config:idf.pythonBinPath};${config:idf.customExtraPaths};${env:PATH}",
@@ -22,7 +22,7 @@
         }
       },
       "windows": {
-        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py -p ${config:idf.portWin} monitor",
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py monitor --no-reset -p ${config:idf.portWin}",
         "options": {
           "env": {
             "PATH": "${config:idf.pythonBinPathWin};${config:idf.customExtraPaths};${env:PATH}",
@@ -33,25 +33,11 @@
 
       "presentation": {
         "focus": true,
-        "revealProblems": "onProblem",
+        "revealProblems": "never",
         "panel": "shared"
       },
 
-      "problemMatcher": [
-        {
-          "owner": "none",
-          "fileLocation": ["autoDetect", "${workspaceFolder}"],
-          "background": {
-            "activeOnStart": true,
-            "beginsPattern": "^Setting IDF_PATH(.*)$",
-            "endsPattern": "^--- Quit: (.*) ---$"
-          },
-          "pattern": {
-            "regexp": "ERROR: (.*)",
-            "message": 1
-          }
-        }
-      ]
-    },
+      "problemMatcher": [ ]
+    }
   ]
 }
