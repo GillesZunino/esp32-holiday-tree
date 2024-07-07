@@ -6,7 +6,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "GDB | Monitor (JTAG + UART)",
+      "name": "EIDF | Eclipse (JTAG + UART)",
+      "type": "gdbtarget",
+      "request": "attach",
+
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Monitor: Start the monitor"
+    },
+    {
+      "name": "GDB | cppgdb (JTAG + UART)",
       "type": "cppdbg",
       "request": "launch",
 
@@ -14,17 +22,17 @@
 
       "linux": {
         "MIMode": "gdb",
-        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "miDebuggerPath": "${command:espIdf.getToolchainGdb}",
         "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
       },
       "osx": {
         "MIMode": "gdb",
-        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "miDebuggerPath": "${command:espIdf.getToolchainGdb}",
         "program": "${workspaceFolder}/build/${command:espIdf.getProjectName}.elf"
       },
       "windows": {
         "MIMode": "gdb",
-        "miDebuggerPath": "${command:espIdf.getXtensaGdb}",
+        "miDebuggerPath": "${command:espIdf.getToolchainGdb}",
         "program": "${workspaceFolder}\\build\\${command:espIdf.getProjectName}.elf"
       },
 
@@ -53,25 +61,6 @@
         "engineLogging": false,
         "natvisDiagnostics": false
       }
-    },
-    {
-      "name": "EIDF | Monitor (Adapter + UART)",
-      "type": "espidf",
-      "request": "launch",
-      "logLevel": 1,
-      "mode": "auto",
-      "tmoScaleFactor": 5,
-      "verifyAppBinBeforeDebug": false,
-      "initGdbCommands": [
-        "target extended-remote :3333",
-        "set mem inaccessible-by-default off",
-        "set remote hardware-watchpoint-limit 2",
-        "monitor reset halt",
-        "maintenance flush register-cache",
-        // ESP-IDF debugger adapter currently requires this breakpoint
-        "thb app_main",
-        "continue"
-      ]
     }
   ]
 }
