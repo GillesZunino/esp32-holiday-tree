@@ -26,7 +26,7 @@ esp_err_t configure_led_strip(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchPi
         return ESP_ERR_INVALID_ARG;
     }
 
-    esp_err_t err =  create_led_strip(ledDataPin, ledOnOffSwitchPin, HolidayTreeLedsCount);
+    esp_err_t err = create_led_strip(ledDataPin, ledOnOffSwitchPin, HolidayTreeLedsCount);
     if (err == ESP_OK) {
         // Turn strip power on ...
         err = set_led_string_on_off(ON);

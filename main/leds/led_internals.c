@@ -6,12 +6,9 @@
 
 #include "leds/led_internals.h"
 
+
 // Tag name used on ESP_LOGx macros
 const char* LED_TAG = "led_strip";
-
-
-// LEDs on the Holiday Tree have a resolution of 10MHz
-static const uint32_t HolidayTreeLedsResolutionInHz = 10 * 1000 * 1000;
 
 
 // LEDs strip on / off switch pin
@@ -42,14 +39,14 @@ esp_err_t create_led_strip(gpio_num_t dataPin, gpio_num_t onOffPin, uint32_t led
             .led_model = LED_MODEL_WS2812,
             .flags.invert_out = false
         };
-        const led_strip_rmt_config_t rmt_config = {
-            .clk_src = RMT_CLK_SRC_DEFAULT,
-            .resolution_hz = HolidayTreeLedsResolutionInHz,
-            .mem_block_symbols = 0,
-            .flags.with_dma = false
-        };
 
-        err = led_strip_new_rmt_device(&led_strip_config, &rmt_config, &s_led_strip_handle);
+        const led_strip_spi_config_t spi_config = {
+            .clk_src = SPI_CLK_SRC_DEFAULT,
+            .spi_bus = SPI2_HOST,
+            .flags.with_dma = true
+        };
+        
+        err = led_strip_new_spi_device(&led_strip_config, &spi_config, &s_led_strip_handle);
     }
 
     return err;
