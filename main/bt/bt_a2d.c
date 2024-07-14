@@ -33,9 +33,6 @@ static uint32_t s_audio_average_packet_size = 0;
 static uint64_t s_audio_total_bytes_received = 0;
 #endif
 
-// Audio stream state
-static esp_a2d_audio_state_t s_audio_state = ESP_A2D_AUDIO_STATE_SUSPEND;
-
 
 static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* param);
 static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
@@ -139,7 +136,11 @@ static void a2d_event_handler(uint16_t event, void* param) {
 
         case ESP_A2D_AUDIO_STATE_EVT: {
             ESP_LOGI(BT_A2D_TAG, "ESP_A2D_AUDIO_STATE_EVT %s", get_a2d_audio_state_name(callbackParams->audio_stat.state));
-            s_audio_state = callbackParams->audio_stat.state;
+
+            esp_err_t err = set_i2s_output_audio_state(callbackParams->audio_stat.state);
+            if (err != ESP_OK) {
+                ESP_LOGI(BT_A2D_TAG, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %d", get_a2d_audio_state_name(callbackParams->audio_stat.state), err);
+            }
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
             if (callbackParams->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
