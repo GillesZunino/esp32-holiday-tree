@@ -59,6 +59,7 @@ static const char* MAIN_TAG = "app_main";
 
 
 static void on_button_pressed(void) {
+    ESP_LOGI(MAIN_TAG, "on_button_pressed() Button pressed");
     // Currently no action
 }
 
