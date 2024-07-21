@@ -28,7 +28,7 @@ menu "Holiday Tree"
             Emit detailed logging about I2S data processing including ring buffer depth, rate of A2DP data ...
 
     config HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR
-        string "Device Name"
+        string "Bluetooth Device Name"
         default "Holiday Tree"
         help
             Name of Bluetooth device
