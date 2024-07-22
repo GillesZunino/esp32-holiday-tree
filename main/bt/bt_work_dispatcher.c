@@ -14,7 +14,7 @@
 
 
 // Bluetooth event work queue log tag
-static const char* BT_WORK_QUEUE_TAG = "bt_workqueue";
+static const char* BtWorkQueueTag = "bt_workqueue";
 
 
 // A unit of work which can be enqueued and executed
@@ -33,8 +33,8 @@ static bool queue_workitem_internal(bluetooth_workitem_t* workItem);
 static void queue_consumer_task(void* arg);
 
 
-bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, void* params, size_t params_len) {
-    ESP_LOGD(BT_WORK_QUEUE_TAG, "%s() event: 0x%x, param len: %d", __func__, eventId, params_len);
+bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, void* params, size_t paramsLen) {
+    ESP_LOGD(BtWorkQueueTag, "%s() event: 0x%x, param len: %d", __func__, eventId, paramsLen);
 
     if ((s_bt_app_task_queue != NULL) && (s_bt_app_task_handle != NULL)) {
         bluetooth_workitem_t workItem = {
@@ -42,13 +42,13 @@ bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t event
             .handler = handler
         };
 
-        if (params_len == 0) {
+        if (paramsLen == 0) {
             return queue_workitem_internal(&workItem);
         } else {
-            if ((params != NULL) && (params_len > 0)) {
-                void* stagedParams = malloc(params_len);
+            if ((params != NULL) && (paramsLen > 0)) {
+                void* stagedParams = malloc(paramsLen);
                 if (stagedParams != NULL) {
-                    memcpy(stagedParams, params, params_len);
+                    memcpy(stagedParams, params, paramsLen);
                     workItem.params = stagedParams;
 
                     bool workQueued = queue_workitem_internal(&workItem);
@@ -62,7 +62,7 @@ bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t event
             }
         }
     } else {
-        ESP_LOGE(BT_WORK_QUEUE_TAG, "%s() trying to queue event 0x%x when dispatcher is not running", __func__, eventId);
+        ESP_LOGE(BtWorkQueueTag, "%s() trying to queue event 0x%x when dispatcher is not running", __func__, eventId);
     }
 
     return false;
@@ -73,13 +73,13 @@ esp_err_t start_bluetooth_dispatcher_task() {
 
     s_bt_app_task_queue = xQueueCreate(workItemDepth, sizeof(bluetooth_workitem_t));
     if (s_bt_app_task_queue == NULL) {
-        ESP_LOGE(BT_WORK_QUEUE_TAG, "%s() xQueueCreate() failed", __func__);
+        ESP_LOGE(BtWorkQueueTag, "%s() xQueueCreate() failed", __func__);
         return ESP_FAIL;
     }
 
     BaseType_t taskCreated = xTaskCreate(queue_consumer_task, "BT Consumer", 3072, NULL, 10, &s_bt_app_task_handle);
     if (taskCreated != pdPASS) {
-        ESP_LOGE(BT_WORK_QUEUE_TAG, "%s() xTaskCreate() failed", __func__);
+        ESP_LOGE(BtWorkQueueTag, "%s() xTaskCreate() failed", __func__);
 
         vQueueDelete(s_bt_app_task_queue);
         s_bt_app_task_queue = NULL;
@@ -119,7 +119,7 @@ esp_err_t stop_bluetooth_dispatcher_task() {
 static bool queue_workitem_internal(bluetooth_workitem_t* workItem) {
     bool enqueued = xQueueSendToBack(s_bt_app_task_queue, workItem, pdMS_TO_TICKS(10)) == pdTRUE;
     if (!enqueued) {
-        ESP_LOGE(BT_WORK_QUEUE_TAG, "%s xQueueSendToBack() failed", __func__);
+        ESP_LOGE(BtWorkQueueTag, "%s xQueueSendToBack() failed", __func__);
     }
 
     return enqueued;
@@ -130,7 +130,7 @@ static void queue_consumer_task(void* arg) {
         bluetooth_workitem_t workItem;
         bool itemDequeued = xQueueReceive(s_bt_app_task_queue, &workItem, (TickType_t) portMAX_DELAY) == pdTRUE;
         if (itemDequeued) {
-            ESP_LOGD(BT_WORK_QUEUE_TAG, "%s, dequeued event: 0x%x", __func__, workItem.eventId);
+            ESP_LOGD(BtWorkQueueTag, "%s, dequeued event: 0x%x", __func__, workItem.eventId);
 
             if (workItem.handler != NULL) {
                 workItem.handler(workItem.eventId, workItem.params);

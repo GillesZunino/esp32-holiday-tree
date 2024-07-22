@@ -15,7 +15,7 @@
 
 
 // Bluetooth AVRC log tag
-static const char* BT_AVRC_TAG = "bt_avrc";
+static const char* BtAvrcTag = "bt_avrc";
 
 
 static esp_err_t register_target_notifications_capabilities();
@@ -55,19 +55,19 @@ esp_err_t setup_avrc_profile() {
     //
 
     // Initialize AVRC Controller module
-    ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BT_AVRC_TAG, "esp_avrc_ct_init() failed");
+    ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BtAvrcTag, "esp_avrc_ct_init() failed");
 
     // Register AVRC Controller callback
-    ESP_RETURN_ON_ERROR(esp_avrc_ct_register_callback(avrc_controller_callback), BT_AVRC_TAG, "esp_avrc_ct_register_callback() failed");
+    ESP_RETURN_ON_ERROR(esp_avrc_ct_register_callback(avrc_controller_callback), BtAvrcTag, "esp_avrc_ct_register_callback() failed");
 
     // Initialize AVRC Target module
-    ESP_RETURN_ON_ERROR(esp_avrc_tg_init(), BT_AVRC_TAG, "esp_avrc_tg_init() failed");
+    ESP_RETURN_ON_ERROR(esp_avrc_tg_init(), BtAvrcTag, "esp_avrc_tg_init() failed");
 
     // Register AVRC Target callback
-    ESP_RETURN_ON_ERROR(esp_avrc_tg_register_callback(avrc_target_callback), BT_AVRC_TAG, "esp_avrc_tg_register_callback() failed");
+    ESP_RETURN_ON_ERROR(esp_avrc_tg_register_callback(avrc_target_callback), BtAvrcTag, "esp_avrc_tg_register_callback() failed");
 
     // Register Target notification capabilities so the controller can request information from this device
-    ESP_RETURN_ON_ERROR(register_target_notifications_capabilities(), BT_AVRC_TAG, "register_target_notifications_capabilities() failed");
+    ESP_RETURN_ON_ERROR(register_target_notifications_capabilities(), BtAvrcTag, "register_target_notifications_capabilities() failed");
     return ESP_OK;
 }
 
@@ -75,10 +75,10 @@ static esp_err_t register_target_notifications_capabilities() {
     esp_err_t err = ESP_FAIL;
 
     // On the Holiday Tree, configure AVRC TG to tell the Phone, Computer ... AVRC CT that the Holiday Tree can notify of 'VOLUME_CHANGE'
-    esp_avrc_rn_evt_cap_mask_t evt_set = {0};
-    bool bitSetOutcome = esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_SET, &evt_set, ESP_AVRC_RN_VOLUME_CHANGE);
+    esp_avrc_rn_evt_cap_mask_t evtSet = {0};
+    bool bitSetOutcome = esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_SET, &evtSet, ESP_AVRC_RN_VOLUME_CHANGE);
     if (bitSetOutcome) {
-        err = esp_avrc_tg_set_rn_evt_cap(&evt_set);
+        err = esp_avrc_tg_set_rn_evt_cap(&evtSet);
     }
     return err;
 }
