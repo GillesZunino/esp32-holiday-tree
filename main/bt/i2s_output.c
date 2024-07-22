@@ -123,13 +123,20 @@ esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWid
 }
 
 static esp_err_t create_i2s_channel() {
-    i2s_chan_config_t channelCfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
-
-    // Automatically send 0 on buffer empty
-    channelCfg.auto_clear = true;
-
     // DMA configuration - It is fixed at channel creation and cannot be changed later unless the channel is deleted
-    get_dma_buffer_size_and_buffer_count_for_data_buffer_size(A2DPBatchSizeInBytes, I2S_DATA_BIT_WIDTH_16BIT, 2, &channelCfg.dma_desc_num, &channelCfg.dma_frame_num, &s_bytes_to_take_from_ringbuffer);
+    uint32_t dmaDescNum = 0;
+    uint32_t dmaFrameNum = 0;
+    get_dma_buffer_size_and_buffer_count_for_data_buffer_size(A2DPBatchSizeInBytes, I2S_DATA_BIT_WIDTH_16BIT, 2, &dmaDescNum, &dmaFrameNum, &s_bytes_to_take_from_ringbuffer);
+
+    // Configure I2S channel - See I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER)
+    i2s_chan_config_t channelCfg = {
+        .id = I2S_NUM_0,
+        .role = I2S_ROLE_MASTER,
+        .dma_desc_num = dmaDescNum,     // 6 Buffers = 6 DMA descriptors
+        .dma_frame_num = dmaFrameNum,   // 240 Frames (aka samples)
+        .auto_clear = true,             // Clear DMA TX buffer to send 0 automatically if no data to send - Otherwise the last data is sent creatig an effect of "repeating sample"
+        .intr_priority = 0              // Priority level - When 0, the driver allocates an interupr with "low" priority (1,2,3)
+    };
 
     // Standard configuration for I2S - Assume 44.1kHz - Frequency, sample size and number of channels can be changed without deleting the channel
     i2s_std_config_t stdCfg = {
