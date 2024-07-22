@@ -37,36 +37,36 @@
 //
 #if CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION
     // Momentary button GPIO
-    const gpio_num_t BUTTON_GPIO = GPIO_NUM_15;
+    const gpio_num_t ButtonGPIONum = GPIO_NUM_15;
 
     // Individually adressable LEDs data GPIO
-    const gpio_num_t LED_DATA_GPIO = GPIO_NUM_5;
+    const gpio_num_t LedDataGPIONum = GPIO_NUM_5;
 #else
     // Momentary button GPIO
-    const gpio_num_t BUTTON_GPIO = GPIO_NUM_23;
+    const gpio_num_t ButtonGPIONum = GPIO_NUM_23;
 
     // Individually adressable LEDs data GPIO
-    const gpio_num_t LED_DATA_GPIO = GPIO_NUM_22;
+    const gpio_num_t LedDataGPIONum = GPIO_NUM_22;
 #endif
 
 
 // Individually adressable LEDs on/off switch GPIO
-const gpio_num_t LED_SWITCH_GPIO = GPIO_NUM_4;
+const gpio_num_t LedSwitchGPIONum = GPIO_NUM_4;
 
 // Main application log tag
-static const char* MAIN_TAG = "app_main";
+static const char* MainTag = "app_main";
 
 
 
-static void on_button_pressed(void) {
-    ESP_LOGI(MAIN_TAG, "on_button_pressed() Button pressed");
+static void on_momentatory_button_pressed(void) {
+    ESP_LOGI(MainTag, "on_momentatory_button_pressed() Button pressed");
     // Currently no action
 }
 
 
 void app_main(void) {
     // Log compile time options
-    ESP_LOGI(MAIN_TAG, "%s", CompileTimeOptions);
+    ESP_LOGI(MainTag, "%s", CompileTimeOptions);
 
     // Initialize NVS — It is used to store PHY calibration data
     esp_err_t err = nvs_flash_init();
@@ -83,13 +83,14 @@ void app_main(void) {
     ESP_ERROR_CHECK(configure_bluetooth());
 
     // Configure tree momentary button
-    ESP_ERROR_CHECK(configure_button(BUTTON_GPIO, &on_button_pressed));
+    ESP_ERROR_CHECK(configure_momentary_button(ButtonGPIONum, &on_momentatory_button_pressed));
 
     // Configure tree lights
-    ESP_ERROR_CHECK(configure_led_strip(LED_DATA_GPIO, LED_SWITCH_GPIO));
-    ESP_ERROR_CHECK(start_led_strip_effect(ProgressiveReveal));
+    ESP_ERROR_CHECK(configure_led_string(LedDataGPIONum, LedSwitchGPIONum));
+    ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
 
     while (true) {
-        vTaskDelay(pdMS_TO_TICKS(10 * 1000));
+        const int TimeToWaitBetweenCyclesInMs = 10 * 1000;
+        vTaskDelay(pdMS_TO_TICKS(TimeToWaitBetweenCyclesInMs));
     }
 }

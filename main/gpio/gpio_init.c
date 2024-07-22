@@ -11,7 +11,7 @@
 #include "gpio_init.h"
 
 
-static const char* GPIO_ISR_TAG = "gpio_isr";
+static const char* GpioIsrTag = "gpio_isr";
 
 static QueueHandle_t s_gpio_isr_dispatch_queue = NULL;
 static TaskHandle_t s_gpio_isr_taskHandle = NULL;
@@ -21,7 +21,7 @@ static void gpio_isr_handler(void* arg) {
     isr_handler_fn_ptr handlerFn = (isr_handler_fn_ptr) arg;
     BaseType_t enqueuOutcome = xQueueGenericSendFromISR(s_gpio_isr_dispatch_queue, &handlerFn, NULL, queueSEND_TO_BACK);
     if (enqueuOutcome != pdPASS) {
-        ESP_LOGE(GPIO_ISR_TAG, "xQueueGenericSendFromISR() failed (0x%x) - ISR will be dropped", enqueuOutcome);
+        ESP_LOGE(GpioIsrTag, "xQueueGenericSendFromISR() failed (0x%x) - ISR will be dropped", enqueuOutcome);
     }
 }
 
@@ -33,15 +33,15 @@ static void gpio_isr_dispatch_task(void* arg) {
             if (handlerFn != NULL) {
                 handlerFn();
             } else {
-                ESP_LOGE(GPIO_ISR_TAG, "xQueueReceive() retrieved and ISR request with NULL handler");
+                ESP_LOGE(GpioIsrTag, "xQueueReceive() retrieved and ISR request with NULL handler");
             }
         } else {
-            ESP_LOGE(GPIO_ISR_TAG, "xQueueReceive() failed (0x%x) - ISR will be dropped", dequeueOutcome);
+            ESP_LOGE(GpioIsrTag, "xQueueReceive() failed (0x%x) - ISR will be dropped", dequeueOutcome);
         }
     }
 }
 
-static esp_err_t configure_isr_task(void) {
+static esp_err_t configure_isr_task() {
     s_gpio_isr_dispatch_queue = xQueueCreate(10, sizeof(void *));
     if (s_gpio_isr_dispatch_queue != NULL) {
         BaseType_t taskCreateOutcome = xTaskCreate(gpio_isr_dispatch_task, "GPIO ISR Task", 2048, NULL, 10, &s_gpio_isr_taskHandle);
@@ -57,16 +57,16 @@ static esp_err_t configure_isr_task(void) {
     return ESP_FAIL;
 }
 
-esp_err_t ht_gpio_isr_handler_add(gpio_num_t gpio_num, isr_handler_fn_ptr fn) {
+esp_err_t ht_gpio_isr_handler_add(gpio_num_t gpioNum, isr_handler_fn_ptr fn) {
     if (fn != NULL) {
-        return gpio_isr_handler_add(gpio_num, gpio_isr_handler, (void*) fn);
+        return gpio_isr_handler_add(gpioNum, gpio_isr_handler, (void*) fn);
     } else {
         return ESP_ERR_INVALID_ARG;
     }
 }
 
-esp_err_t ht_gpio_isr_handler_delete(gpio_num_t gpio_num) {
-    return gpio_isr_handler_remove(gpio_num);
+esp_err_t ht_gpio_isr_handler_delete(gpio_num_t gpioNum) {
+    return gpio_isr_handler_remove(gpioNum);
 }
 
 esp_err_t configure_gpio_isr_dispatcher(void) {

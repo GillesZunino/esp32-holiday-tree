@@ -5,4 +5,4 @@
 #pragma once
 
 
-NotificationType_t progressive_reveal_led_effect();
+led_animation_task_notification_t progressive_reveal_led_effect();

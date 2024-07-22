@@ -5,8 +5,7 @@
 #pragma once
 
 typedef enum {
-    ProgressiveReveal = 1,
+    LedProgressiveRevealEffect = 1,
 
-    
-    LEDEffectMax
-} LEDEffect_t;
+    LedEffectMax
+} led_known_effects_t;

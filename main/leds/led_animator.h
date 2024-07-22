@@ -8,5 +8,5 @@
 
 #include "leds/led_known_effects.h"
 
-esp_err_t start_led_strip_effect(LEDEffect_t led_effect);
-esp_err_t stop_led_strip_effect(void);
+esp_err_t start_led_string_effect(led_known_effects_t ledEffect);
+esp_err_t stop_led_string_effect();

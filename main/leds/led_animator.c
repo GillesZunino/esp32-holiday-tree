@@ -18,28 +18,28 @@ static esp_err_t turn_led_string_on_off(led_string_state_t on);
 
 
 // FreeRTOS task notification index for LED animation task notifications
-const UBaseType_t ledAnimationTaskNotificationIndex = 0;
+const UBaseType_t LedAnimationTaskNotificationIndex = 0;
 
 // LEDs animation task
-static TaskHandle_t xAnimateLEDTaskHandle = NULL;
+static TaskHandle_t s_animate_led_task_handle = NULL;
 
 
-esp_err_t start_led_strip_effect(LEDEffect_t led_effect) {
-    if (xAnimateLEDTaskHandle == NULL) {
-        BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 3072, NULL, 10, &xAnimateLEDTaskHandle);
+esp_err_t start_led_string_effect(led_known_effects_t ledEffect) {
+    if (s_animate_led_task_handle == NULL) {
+        BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 3072, NULL, 10, &s_animate_led_task_handle);
         if (outcome != pdPASS) {
-            xAnimateLEDTaskHandle = NULL;
+            s_animate_led_task_handle = NULL;
             return ESP_FAIL;
         }
     }
 
-    BaseType_t outcome = xTaskNotifyIndexed(xAnimateLEDTaskHandle, ledAnimationTaskNotificationIndex, led_effect, eSetValueWithOverwrite);
+    BaseType_t outcome = xTaskNotifyIndexed(s_animate_led_task_handle, LedAnimationTaskNotificationIndex, ledEffect, eSetValueWithOverwrite);
     return outcome == pdPASS ? ESP_OK : ESP_FAIL;
 }
 
-esp_err_t stop_led_strip_effect(void) {
-    if (xAnimateLEDTaskHandle != NULL) {
-        BaseType_t outcome = xTaskNotifyIndexed(xAnimateLEDTaskHandle, ledAnimationTaskNotificationIndex, NotificationPause, eSetValueWithOverwrite);
+esp_err_t stop_led_string_effect() {
+    if (s_animate_led_task_handle != NULL) {
+        BaseType_t outcome = xTaskNotifyIndexed(s_animate_led_task_handle, LedAnimationTaskNotificationIndex, LedAnimationTaskNotificationPause, eSetValueWithOverwrite);
         return outcome == pdPASS ? ESP_OK : ESP_FAIL;
     }
 
@@ -48,9 +48,9 @@ esp_err_t stop_led_strip_effect(void) {
 
 static esp_err_t turn_led_string_on_off(led_string_state_t on) {
     switch (on) {
-        case ON: {
+        case LedStringOn: {
             // Turn LEDs string on and clear all LEDs
-            esp_err_t err = set_led_string_on_off(ON);
+            esp_err_t err = set_led_string_on_off(LedStringOn);
             if (err == ESP_OK) {
                 // This calls refresh_led_string()
                 return clear_led_string();
@@ -58,73 +58,73 @@ static esp_err_t turn_led_string_on_off(led_string_state_t on) {
         }
         break;
 
-        case OFF: {
+        case LedStringOff: {
             // Clear all LEDs - This calls refresh_led_string()
             esp_err_t err = clear_led_string();
             if (err == ESP_OK) {
                 // Turn LEDs string off
-                return set_led_string_on_off(OFF);
+                return set_led_string_on_off(LedStringOff);
             }
         }
         break;
 
         default:
-            ESP_LOGE(LED_TAG, "Cannot turn LED strip on/off - Unknown desired state (%d)", on);
+            ESP_LOGE(LedStringTag, "Cannot turn LED string on/off - Unknown desired state (%d)", on);
         break;
     }
 
     return ESP_FAIL;
 }
 
-NotificationType_t accept_task_notification_with_delay(uint32_t delayMs) {
+led_animation_task_notification_t accept_task_notification_with_delay(uint32_t delayMs) {
     uint32_t ulNotificationValue = 0UL;
     const TickType_t ticksToWait = delayMs != portMAX_DELAY ? pdMS_TO_TICKS(delayMs) : portMAX_DELAY;
-    BaseType_t notificationWaitOutcome = xTaskNotifyWaitIndexed(ledAnimationTaskNotificationIndex, 0x0, 0x0, &ulNotificationValue, ticksToWait);
-    ESP_LOGD(LED_TAG, "xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu] [Timeout: %lu]", notificationWaitOutcome, ulNotificationValue, delayMs);
+    BaseType_t notificationWaitOutcome = xTaskNotifyWaitIndexed(LedAnimationTaskNotificationIndex, 0x0, 0x0, &ulNotificationValue, ticksToWait);
+    ESP_LOGD(LedStringTag, "xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu] [Timeout: %lu]", notificationWaitOutcome, ulNotificationValue, delayMs);
     switch (notificationWaitOutcome) {
         case pdTRUE:
             // Notification received
             return ulNotificationValue;
         case pdFALSE:
             // Timeout - No notification was received
-            return NotificationNone;
+            return LedAnimationTaskNotificationNone;
 
         default:
             // Unknown notification - Log and ignore the unknown message
-            ESP_LOGE(LED_TAG, "xTaskNotifyWaitIndexed() received unknown notification (%lu)", ulNotificationValue);
-            return NotificationNone;
+            ESP_LOGE(LedStringTag, "xTaskNotifyWaitIndexed() received unknown notification (%lu)", ulNotificationValue);
+            return LedAnimationTaskNotificationNone;
     }
 }
 
 static void animate_led_task(void* arg) {
-    NotificationType_t notification = NotificationPause;
+    led_animation_task_notification_t notification = LedAnimationTaskNotificationPause;
     for (;;) {
         switch (notification) {
-            case NotificationPause:
+            case LedAnimationTaskNotificationPause:
                 // Wait (portMAX_DELAY = infinite timeout) to be awaken up to animate LEDs
                 notification = accept_task_notification_with_delay(portMAX_DELAY);
-                ESP_LOGI(LED_TAG, "animate_led_task() received notification (%d)", notification);
+                ESP_LOGI(LedStringTag, "animate_led_task() received notification (%d)", notification);
             break;
 
             default: {
                 // Start desired effect
-                if (notification >= NotificationEffectMin) {
-                    LEDEffect_t led_effect = notification;
-                    if (led_effect < LEDEffectMax) {
-                        turn_led_string_on_off(ON);
-                        switch (led_effect) {
-                            case ProgressiveReveal:
+                if (notification >= LedAnimationTaskNotificationEffectMin) {
+                    led_known_effects_t ledEffect = notification;
+                    if (ledEffect < LedEffectMax) {
+                        turn_led_string_on_off(LedStringOn);
+                        switch (ledEffect) {
+                            case LedProgressiveRevealEffect:
                                 notification = progressive_reveal_led_effect();
                             break;
 
                             default:
-                                ESP_LOGW(LED_TAG, "animate_led_task() unable to start effect (%d) - Effect not implemented", led_effect);
+                                ESP_LOGW(LedStringTag, "animate_led_task() unable to start effect (%d) - Effect not implemented", ledEffect);
                             break;
                         }
-                        ESP_LOGI(LED_TAG, "animate_led_task() effect exited with notification (%u)", notification);
-                        turn_led_string_on_off(OFF);
+                        ESP_LOGI(LedStringTag, "animate_led_task() effect exited with notification (%u)", notification);
+                        turn_led_string_on_off(LedStringOff);
                     } else {
-                        ESP_LOGE(LED_TAG, "animate_led_task() unable to start effect (%d) - Unknown effect", led_effect);
+                        ESP_LOGE(LedStringTag, "animate_led_task() unable to start effect (%d) - Unknown effect", ledEffect);
                     }
                 }
             }

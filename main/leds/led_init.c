@@ -13,7 +13,7 @@
 const int HolidayTreeLedsCount = 5;
 
 
-esp_err_t configure_led_strip(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchPin) {
+esp_err_t configure_led_string(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchPin) {
     if ((ledDataPin < GPIO_NUM_0) || (ledDataPin > GPIO_NUM_MAX)) {
         return ESP_ERR_INVALID_ARG;
     }
@@ -26,19 +26,19 @@ esp_err_t configure_led_strip(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchPi
         return ESP_ERR_INVALID_ARG;
     }
 
-    esp_err_t err = create_led_strip(ledDataPin, ledOnOffSwitchPin, HolidayTreeLedsCount);
+    esp_err_t err = create_led_string(ledDataPin, ledOnOffSwitchPin, HolidayTreeLedsCount);
     if (err == ESP_OK) {
-        // Turn strip power on ...
-        err = set_led_string_on_off(ON);
+        // Turn string power on ...
+        err = set_led_string_on_off(LedStringOn);
 
-        // Clear strip ...
+        // Clear string ...
         if (err == ESP_OK) {
             err = clear_led_string();
         }
         
-        // Turn strip power back off
+        // Turn string power back off
         if (err == ESP_OK) {
-            err = set_led_string_on_off(OFF);
+            err = set_led_string_on_off(LedStringOff);
         }
     }
 
