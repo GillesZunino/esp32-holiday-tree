@@ -6,7 +6,55 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Monitor: Start the monitor",
+      "label": "Monitor: Start the monitor (RESET)",
+      "type": "shell",
+
+      "isBackground": true,
+
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py monitor -p ${config:idf.port}",
+      "linux": {
+        "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py monitor -p ${config:idf.port",
+        "options": {
+          "env": {
+            "PATH": "${config:idf.pythonBinPath};${config:idf.customExtraPaths};${env:PATH}",
+            "IDF_TOOLS_PATH": "${config:idf.toolsPath}"
+          }
+        }
+      },
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py monitor -p ${config:idf.portWin}",
+        "options": {
+          "env": {
+            "PATH": "${config:idf.pythonBinPathWin};${config:idf.customExtraPaths};${env:PATH}",
+            "IDF_TOOLS_PATH": "${config:idf.toolsPathWin}"
+          }
+        }
+      },
+
+      "presentation": {
+        "focus": true,
+        "revealProblems": "onProblem",
+        "panel": "shared"
+      },
+
+      "problemMatcher": [
+        {
+          "owner": "none",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^Setting IDF_PATH(.*)$",
+            "endsPattern": "^--- Quit: (.*) ---$"
+          },
+          "pattern": {
+            "regexp": "ERROR: (.*)",
+            "message": 1
+          }
+        }
+      ]
+    },
+    {
+      "label": "Monitor: Start the monitor (NO RESET)",
       "type": "shell",
 
       "isBackground": true,
@@ -33,11 +81,213 @@
 
       "presentation": {
         "focus": true,
-        "revealProblems": "never",
+        "revealProblems": "onProblem",
         "panel": "shared"
       },
 
-      "problemMatcher": [ ]
+      "problemMatcher": [
+        {
+          "owner": "none",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^Setting IDF_PATH(.*)$",
+            "endsPattern": "^--- Quit: (.*) ---$"
+          },
+          "pattern": {
+            "regexp": "ERROR: (.*)",
+            "message": 1
+          }
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "label": "Build - Build project",
+      "type": "shell",
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py build",
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py build",
+        "options": {
+          "env": {
+            "PATH": "${config:idf.pythonBinPathWin};${config:idf.customExtraPaths};${env:PATH}",
+            "IDF_TOOLS_PATH": "${config:idf.toolsPathWin}"
+          }
+        }
+      },
+      "options": {
+        "env": {
+          "PATH": "${env:PATH}:${config:idf.customExtraPaths}"
+        }
+      },
+      "problemMatcher": [
+        {
+          "owner": "cpp",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*?):(\\d+):(\\d*):?\\s+(?:fatal\\s+)?(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
+    {
+      "label": "Clean - Clean the project",
+      "type": "shell",
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py fullclean",
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py fullclean",
+        "options": {
+          "env": {
+            "PATH": "${env:PATH};${config:idf.customExtraPaths}"
+          }
+        }
+      },
+      "options": {
+        "env": {
+          "PATH": "${env:PATH}:${config:idf.customExtraPaths}"
+        }
+      },
+      "problemMatcher": [
+        {
+          "owner": "cpp",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*?):(\\d+):(\\d*):?\\s+(?:fatal\\s+)?(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      ]
+    },
+    {
+      "label": "Flash - Flash the device",
+      "type": "shell",
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} -b ${config:idf.flashBaudRate} flash",
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py flash -p ${config:idf.portWin} -b ${config:idf.flashBaudRate}",
+        "options": {
+          "env": {
+            "PATH": "${env:PATH};${config:idf.customExtraPaths}"
+          }
+        }
+      },
+      "options": {
+        "env": {
+          "PATH": "${env:PATH}:${config:idf.customExtraPaths}"
+        }
+      },
+      "problemMatcher": [
+        {
+          "owner": "cpp",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*?):(\\d+):(\\d*):?\\s+(?:fatal\\s+)?(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      ]
+    },
+    {
+      "label": "Flash and Monitor: Flash and start the monitor",
+      "type": "shell",
+      "command": "${config:idf.pythonBinPath} ${config:idf.espIdfPath}/tools/idf.py -p ${config:idf.port} monitor",
+      "windows": {
+        "command": "${config:idf.pythonBinPathWin} ${config:idf.espIdfPathWin}\\tools\\idf.py -p ${config:idf.portWin} monitor",
+        "options": {
+          "env": {
+            "PATH": "${env:PATH};${config:idf.customExtraPaths}"
+          }
+        }
+      },
+      "options": {
+        "env": {
+          "PATH": "${env:PATH}:${config:idf.customExtraPaths}"
+        }
+      },
+      "problemMatcher": [
+        {
+          "owner": "cpp",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*?):(\\d+):(\\d*):?\\s+(?:fatal\\s+)?(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        }
+      ],
+      "dependsOn": "Flash - Flash the device"
+    },
+    {
+      "label": "OpenOCD: Start openOCD",
+      "type": "shell",
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "new"
+      },
+      "command": "openocd -s ${command:espIdf.getOpenOcdScriptValue} ${command:espIdf.getOpenOcdConfigs}",
+      "windows": {
+        "command": "openocd.exe -s ${command:espIdf.getOpenOcdScriptValue} ${command:espIdf.getOpenOcdConfigs}",
+        "options": {
+          "env": {
+            "PATH": "${env:PATH};${config:idf.customExtraPaths}"
+          }
+        }
+      },
+      "options": {
+        "env": {
+          "PATH": "${env:PATH}:${config:idf.customExtraPaths}"
+        }
+      },
+      "problemMatcher": {
+        "owner": "cpp",
+        "fileLocation": ["autoDetect", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*?):(\\d+):(\\d*):?\\s+(?:fatal\\s+)?(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
     }
   ]
 }
