@@ -11,7 +11,14 @@
       "request": "attach",
 
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Monitor: Start the monitor"
+      "preLaunchTask": "Monitor: Start the monitor (RESET)",
+
+      "initCommands": [
+        "set mem inaccessible-by-default off",
+        "set remote hardware-watchpoint-limit {IDF_TARGET_CPU_WATCHPOINT_NUM}",
+        "monitor reset halt",
+        "maintenance flush register-cache"
+      ]
     },
     {
       "name": "GDB | cppgdb (JTAG + UART)",
