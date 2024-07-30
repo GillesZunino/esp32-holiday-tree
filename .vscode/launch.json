@@ -48,7 +48,7 @@
         { "name": "PATH", "value": "${config:idf.customExtraPaths}" }
       ],
 
-      "preLaunchTask": "Monitor: Start the monitor",
+      "preLaunchTask": "Monitor: Start the monitor (RESET)",
 
       "setupCommands": [
         { "text": "target extended-remote :3333" },
