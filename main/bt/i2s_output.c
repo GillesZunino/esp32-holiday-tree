@@ -205,7 +205,7 @@ static esp_err_t start_i2s_output_task() {
     // Create ring buffer
     s_i2s_ringbuffer = xRingbufferCreate(RingBufferMaximumSizeInBytes, RINGBUF_TYPE_BYTEBUF);
     if (s_i2s_ringbuffer == NULL) {
-        ESP_LOGE(BtI2sOutputTag, "xRingbufferCreate() failed");
+        ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xRingbufferCreate() failed");
         err = ESP_FAIL;
         goto cleanup;
     }
@@ -213,6 +213,9 @@ static esp_err_t start_i2s_output_task() {
     // Create output task
     BaseType_t taskCreated = xTaskCreate(i2s_task_handler, "BtI2STask", 2048, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;
+    if (err != ESP_OK) {
+        ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xTaskCreate() failed");
+    }
 
 cleanup:
     if (err != ESP_OK) {
