@@ -24,7 +24,8 @@ const UBaseType_t LedAnimationTaskNotificationIndex = 0;
 static TaskHandle_t s_animate_led_task_handle = NULL;
 
 
-static char* get_led_effect_name(led_known_effects_t ledEffect);
+static const char* get_led_task_notification_name(led_animation_task_notification_t notification);
+static const char* get_led_effect_name(led_known_effects_t ledEffect);
 
 
 esp_err_t start_led_string_effect(led_known_effects_t ledEffect) {
@@ -106,7 +107,7 @@ static void animate_led_task(void* arg) {
             case LedAnimationTaskNotificationPause:
                 // Wait (portMAX_DELAY = infinite timeout) to be awaken up to animate LEDs
                 notification = accept_task_notification_with_delay(portMAX_DELAY);
-                ESP_LOGI(LedStringTag, "animate_led_task() received notification (%d)", notification);
+                ESP_LOGI(LedStringTag, "animate_led_task() received notification '%s' (%d)", get_led_task_notification_name(notification), notification);
             break;
 
             default: {
@@ -139,7 +140,18 @@ static void animate_led_task(void* arg) {
     }
 }
 
-static char* get_led_effect_name(led_known_effects_t ledEffect) {
+static const char* get_led_task_notification_name(led_animation_task_notification_t notification) {
+    switch (notification) {
+        case LedAnimationTaskNotificationNone:
+            return "LedAnimationTaskNotificationNone";
+        case LedAnimationTaskNotificationPause:
+            return "LedAnimationTaskNotificationPause";
+        default:
+            return get_led_effect_name(notification);
+    }
+}
+
+static const char* get_led_effect_name(led_known_effects_t ledEffect) {
     switch (ledEffect) {
         case LedProgressiveRevealEffect:
             return "LedProgressiveRevealEffect";
