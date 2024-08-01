@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------------
 
 #include <string.h>
+#include <math.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -60,6 +61,7 @@ static i2s_chan_handle_t s_i2s_tx_channel = NULL;
 static TaskHandle_t s_i2s_task_handle = NULL;
 static RingbufHandle_t s_i2s_ringbuffer = NULL;
 
+static uint8_t s_bytes_per_sample_per_channel = 0;
 static size_t s_bytes_to_take_from_ringbuffer = 0;
 
 
@@ -72,6 +74,8 @@ static esp_err_t stop_i2s_output_task();
 static void i2s_task_handler(void* arg);
 
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer);
+static void apply_volume(void* data, size_t len, uint8_t bytePerSample);
+
 static i2s_writer_notification_t accept_i2s_task_notification_with_delay(uint32_t delayMs);
 
 static esp_err_t notify_a2dp_audio_active();
@@ -119,6 +123,10 @@ esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWid
 
     // Enable the channel
     ESP_RETURN_ON_ERROR(i2s_channel_enable(s_i2s_tx_channel), BtI2sOutputTag, "i2s_channel_enable");
+
+    // Cache per channel data width in byte - We currently only support only SBC which is 16 bits per sample per channel
+    s_bytes_per_sample_per_channel = dataWidth / 8;
+
     return ESP_OK;
 }
 
@@ -455,17 +463,43 @@ static void i2s_task_handler(void* arg) {
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer) {
     *pBytesTakenFromBuffer = 0;
 
-    size_t sizeRetrievedFromRingBufferInBytes = 0;
-    uint8_t *data = (uint8_t *) xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, readMaxWaitInTicks, maxBytesToTakeFromBuffer);
-    if (data != NULL) {
-        *pBytesTakenFromBuffer = sizeRetrievedFromRingBufferInBytes;
+    // Retrieve the number of available bytes - We would like to read a multiple of samples so we can apply software volume in a mneaingful way
+    UBaseType_t bytesWaitingToBeRetrieved = 0;
+    vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
+    size_t maxToRetrieveUnaligned = bytesWaitingToBeRetrieved > maxBytesToTakeFromBuffer ? maxBytesToTakeFromBuffer : bytesWaitingToBeRetrieved;
 
-        size_t bytesWritten = 0;
-        esp_err_t err = i2s_channel_write(s_i2s_tx_channel, (void*) data, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
-        vRingbufferReturnItem(s_i2s_ringbuffer, (void *) data);
-        return err;
-    } else {
-        return ESP_ERR_TIMEOUT;
+    // Align to boundaries of the number of bytes per channel - In practice, this is 2 bytes
+    size_t bytesToTake = (maxToRetrieveUnaligned >> (s_bytes_per_sample_per_channel - 1)) << (s_bytes_per_sample_per_channel - 1);
+    if (bytesToTake > 0) {
+        size_t sizeRetrievedFromRingBufferInBytes = 0;
+        void* data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, readMaxWaitInTicks, bytesToTake);
+        if (data != NULL) {
+            *pBytesTakenFromBuffer = sizeRetrievedFromRingBufferInBytes;
+
+            apply_volume(data, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
+
+            size_t bytesWritten = 0;
+            esp_err_t err = i2s_channel_write(s_i2s_tx_channel, (void*) data, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
+            vRingbufferReturnItem(s_i2s_ringbuffer, (void *) data);
+            return err;
+        } else {
+            return ESP_ERR_TIMEOUT;
+        }
+    }
+
+    return ESP_ERR_TIMEOUT;
+}
+
+static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
+    const float volumeFactor = get_volume_factor();
+
+    // TODO: We currently only support I2S_DATA_BIT_WIDTH_16BIT or 2 bytes per channel
+    uint16_t* incomingData = (uint16_t*) data;
+    for (size_t dataIndex = 0; dataIndex < len / bytePerSample; dataIndex++) {
+        int16_t pcmData = incomingData[dataIndex];
+        int32_t pcmDataWithVolume = (int32_t) roundf(pcmData * volumeFactor);
+        uint16_t truncatedPcmDataWithVolume = pcmDataWithVolume;
+        incomingData[dataIndex] = truncatedPcmDataWithVolume;
     }
 }
 
