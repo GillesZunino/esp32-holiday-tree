@@ -24,6 +24,9 @@ const UBaseType_t LedAnimationTaskNotificationIndex = 0;
 static TaskHandle_t s_animate_led_task_handle = NULL;
 
 
+static char* get_led_effect_name(led_known_effects_t ledEffect);
+
+
 esp_err_t start_led_string_effect(led_known_effects_t ledEffect) {
     if (s_animate_led_task_handle == NULL) {
         BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 3072, NULL, 10, &s_animate_led_task_handle);
@@ -110,6 +113,9 @@ static void animate_led_task(void* arg) {
                 // Start desired effect
                 if (notification >= LedAnimationTaskNotificationEffectMin) {
                     led_known_effects_t ledEffect = notification;
+
+                    ESP_LOGI(LedStringTag, "animate_led_task() Trying to switch LED effect to '%s' (%d)", get_led_effect_name(ledEffect), notification);
+
                     if (ledEffect < LedEffectMax) {
                         turn_led_string_on_off(LedStringOn);
                         switch (ledEffect) {
@@ -130,5 +136,14 @@ static void animate_led_task(void* arg) {
             }
             break;
         }
+    }
+}
+
+static char* get_led_effect_name(led_known_effects_t ledEffect) {
+    switch (ledEffect) {
+        case LedProgressiveRevealEffect:
+            return "LedProgressiveRevealEffect";
+        default:
+            return "N/A";
     }
 }
