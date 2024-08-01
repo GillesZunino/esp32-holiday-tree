@@ -114,7 +114,7 @@ static void a2d_event_handler(uint16_t event, void* param) {
                 break;
 
                 case ESP_A2D_CONNECTION_STATE_DISCONNECTED: {
-                    esp_err_t err =esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+                    esp_err_t err = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
                     if (err == ESP_OK) {
                         err = delete_i2s_output();
                         if (err != ESP_OK) {
