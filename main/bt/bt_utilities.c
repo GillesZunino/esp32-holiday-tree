@@ -12,7 +12,7 @@
 #include "bt/bt_utilities.h"
 
 
-char* get_bda_string(esp_bd_addr_t bda, char str[18]) {
+const char* get_bda_string(esp_bd_addr_t bda, char str[18]) {
     if ((bda == NULL) || (str == NULL)) {
         return NULL;
     }
@@ -156,7 +156,7 @@ const char* get_avrc_notification_name(uint8_t eventId) {
     }
 }
 
-char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
+const char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
     if (featuresStr == NULL) {
         return NULL;
     }
@@ -191,7 +191,7 @@ char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
     return featuresStr;
 }
 
-char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
+const char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
     if (featuresStr == NULL) {
         return NULL;
     }
@@ -261,7 +261,7 @@ const char* get_a2d_audio_state_name(esp_a2d_audio_state_t audioState) {
     }
 }
 
-char** get_a2d_media_codec_names(esp_a2d_mct_t codecType, char* codecNames[5]) {
+const char** get_a2d_media_codec_names(esp_a2d_mct_t codecType, char* codecNames[5]) {
     if (codecNames == NULL) {
         return NULL;
     }

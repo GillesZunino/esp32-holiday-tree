@@ -18,6 +18,7 @@ esp_err_t configure_momentary_button(gpio_num_t buttonGpio, isr_handler_fn_ptr f
 		.pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_NEGEDGE
     };
+    
     esp_err_t err = gpio_config(&buttonPinConfiguration);
     if (err == ESP_OK) {
         return ht_gpio_isr_handler_add(buttonGpio, fn);
