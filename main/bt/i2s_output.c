@@ -96,14 +96,16 @@ esp_err_t start_i2s_output() {
 }
 
 esp_err_t delete_i2s_output() {
+    ESP_LOGI(BtI2sOutputTag, "delete_i2s_output() - Stopping I2S task");
     esp_err_t err = stop_i2s_output_task();
     if (err != ESP_OK) {
         ESP_LOGW(BtI2sOutputTag, "stop_i2s_output_task() failed while shutting down I2S output task (%d)", err);
     }
 
+    ESP_LOGI(BtI2sOutputTag, "delete_i2s_output() - Deleting I2S channel");
     err = delete_i2s_channel();
     if (err != ESP_OK) {
-        ESP_LOGW(BtI2sOutputTag, "stop_i2s_output_task() failed while shutting down I2S channel (%d)", err);
+        ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%d)", err);
     }
 
     return err;
