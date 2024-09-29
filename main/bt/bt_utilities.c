@@ -23,22 +23,22 @@ const char* get_bda_string(esp_bd_addr_t bda, char str[18]) {
 
 const char* get_gap_link_key_type_name(esp_bt_link_key_type_t linkKeyType) {
     switch (linkKeyType) {
-    case ESP_BT_LINK_KEY_COMB:
-        return "ESP_BT_LINK_KEY_COMB";
-    case ESP_BT_LINK_KEY_DBG_COMB:
-        return "ESP_BT_LINK_KEY_DBG_COMB";
-    case ESP_BT_LINK_KEY_UNAUTHED_COMB_P192:
-        return "ESP_BT_LINK_KEY_UNAUTHED_COMB_P192";
-    case ESP_BT_LINK_KEY_AUTHED_COMB_P192:
-        return "ESP_BT_LINK_KEY_AUTHED_COMB_P192";
-    case ESP_BT_LINK_KEY_CHG_COMB:
-        return "ESP_BT_LINK_KEY_CHG_COMB";
-    case ESP_BT_LINK_KEY_UNAUTHED_COMB_P256:
-        return "ESP_BT_LINK_KEY_UNAUTHED_COMB_P256";
-    case ESP_BT_LINK_KEY_AUTHED_COMB_P256:
-        return "ESP_BT_LINK_KEY_AUTHED_COMB_P256";
-    default:
-        return "N/A";
+        case ESP_BT_LINK_KEY_COMB:
+            return "ESP_BT_LINK_KEY_COMB";
+        case ESP_BT_LINK_KEY_DBG_COMB:
+            return "ESP_BT_LINK_KEY_DBG_COMB";
+        case ESP_BT_LINK_KEY_UNAUTHED_COMB_P192:
+            return "ESP_BT_LINK_KEY_UNAUTHED_COMB_P192";
+        case ESP_BT_LINK_KEY_AUTHED_COMB_P192:
+            return "ESP_BT_LINK_KEY_AUTHED_COMB_P192";
+        case ESP_BT_LINK_KEY_CHG_COMB:
+            return "ESP_BT_LINK_KEY_CHG_COMB";
+        case ESP_BT_LINK_KEY_UNAUTHED_COMB_P256:
+            return "ESP_BT_LINK_KEY_UNAUTHED_COMB_P256";
+        case ESP_BT_LINK_KEY_AUTHED_COMB_P256:
+            return "ESP_BT_LINK_KEY_AUTHED_COMB_P256";
+        default:
+            return "N/A";
     }
 }
 
@@ -56,18 +56,17 @@ const char* get_gap_encryption_mode(esp_bt_enc_mode_t encryptionMode) {
 }
 
 const char* get_gap_power_mode_name(esp_bt_pm_mode_t powerMode) {
-    switch (powerMode)
-    {
-    case ESP_BT_PM_MD_ACTIVE:
-        return "ESP_BT_PM_MD_ACTIVE";
-    case ESP_BT_PM_MD_HOLD:
-        return "ESP_BT_PM_MD_HOLD";
-    case ESP_BT_PM_MD_SNIFF:
-        return "ESP_BT_PM_MD_SNIFF";
-    case ESP_BT_PM_MD_PARK:
-        return "ESP_BT_PM_MD_PARK";
-    default:
-        return "N/A";
+    switch (powerMode) {
+        case ESP_BT_PM_MD_ACTIVE:
+            return "ESP_BT_PM_MD_ACTIVE";
+        case ESP_BT_PM_MD_HOLD:
+            return "ESP_BT_PM_MD_HOLD";
+        case ESP_BT_PM_MD_SNIFF:
+            return "ESP_BT_PM_MD_SNIFF";
+        case ESP_BT_PM_MD_PARK:
+            return "ESP_BT_PM_MD_PARK";
+        default:
+            return "N/A";
     }
 }
 
