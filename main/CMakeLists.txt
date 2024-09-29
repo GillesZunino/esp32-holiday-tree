@@ -1,4 +1,4 @@
-idf_component_register(SRCS
+set(srcs
         "gpio/gpio_init.c"
         "button/button_init.c"
 
@@ -18,7 +18,10 @@ idf_component_register(SRCS
         "leds/led_internals.c"
         "leds/led_animator.c"
         "leds/progressive_reveal_effect.c"
-        
-        "main.c"
 
+        "main.c"
+)
+
+idf_component_register(
+        SRCS "${srcs}"
         INCLUDE_DIRS ".")
