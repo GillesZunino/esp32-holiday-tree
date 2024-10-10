@@ -39,5 +39,8 @@
   "idf.svdFilePath": "${workspaceFolder}/svd/${config:idf.adapterTargetName}.svd",
 
   "idf.portWin": "COM3",
-  "idf.flashType": "JTAG"
+  "idf.flashType": "JTAG",
+
+  "files.associations": {
+  }
 }
