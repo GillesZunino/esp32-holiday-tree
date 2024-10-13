@@ -90,7 +90,8 @@ void app_main(void) {
     ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
 
     while (true) {
-        const int TimeToWaitBetweenCyclesInMs = 10 * 1000;
+        // Make sure this is less than CONFIG_ESP_TASK_WDT_TIMEOUT_S to allow watchdog reset in time IDLE1 (CPU 1)
+        const int TimeToWaitBetweenCyclesInMs = 1 * 1000;
         vTaskDelay(pdMS_TO_TICKS(TimeToWaitBetweenCyclesInMs));
     }
 }
