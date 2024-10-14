@@ -18,6 +18,15 @@ CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY=y
 CONFIG_BTDM_CTRL_MODE_BLE_ONLY=n
 CONFIG_BTDM_CTRL_MODE_BTDM=n
 
+# Disable WiFi / Bluetooth coexist since we do not use WiFi
+CONFIG_ESP_COEX_SW_COEXIST_ENABLE=n
+
+# Disable internal EMAC controller since we do not use Ethernet
+CONFIG_ETH_USE_ESP32_EMAC=n
+
+# Disable SPI to Ethernet since we do not use Ethernet
+CONFIG_ETH_USE_SPI_ETHERNET=n
+
 # Enable Bluetooth Advanced Audio Distribution Profile (A2DP)
 CONFIG_BT_A2DP_ENABLE=y
 
