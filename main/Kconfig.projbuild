@@ -59,4 +59,10 @@ menu "Holiday Tree"
         help
             Emit detailed logging about Bluetooth A2DP processing
 
+    config  HOLIDAYTREE_BT_AVR_CT_LOG
+        bool "Log Bluetooth AVR Controller processing"
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
+        help
+            Emit detailed logging about Bluetooth AVR Controller processing
+            
 endmenu
