@@ -47,4 +47,10 @@ menu "Holiday Tree"
         help
             Static pin to request when pairing
             
+    config  HOLIDAYTREE_BT_GAP_LOG
+        bool "Log Bluetooth GAP processing"
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
+        help
+            Emit detailed logging about Bluetooth GAP processing
+
 endmenu
