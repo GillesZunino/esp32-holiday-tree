@@ -36,13 +36,16 @@ static void avrc_target_event_handler(uint16_t event, void *params) {
     esp_avrc_tg_cb_param_t *callbackParams = (esp_avrc_tg_cb_param_t *)params;
     switch (event) {
         case ESP_AVRC_TG_CONNECTION_STATE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
             char bdaStr[18];
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_CONNECTION_STATE_EVT %s remote [%s]",
                     callbackParams->conn_stat.connected ? "connected to" : "disconnected from", get_bda_string(callbackParams->conn_stat.remote_bda, bdaStr));
+#endif
         }
         break;
 
         case ESP_AVRC_TG_REMOTE_FEATURES_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REMOTE_FEATURES_EVT feature bit mask: 0x%"PRIx32", CT features: 0x%"PRIx16, callbackParams->rmt_feats.feat_mask, callbackParams->rmt_feats.ct_feat_flag);
             // Features
             char* featuresStr[6];
@@ -59,22 +62,26 @@ static void avrc_target_event_handler(uint16_t event, void *params) {
             for (uint8_t index = 0; (featureFlagsStr[index] != NULL) && (index < 8); index++) {
                 ESP_LOGI(BtAvrcTargetTag, "[TG]\t%s", featureFlagsStr[index]);
             }
+#endif
         }
         break;
 
         case ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT: {
             // Remote controller sets the absolute volume
             uint8_t volumeAvrc = callbackParams->set_abs_vol.volume;
+#if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
             uint16_t volume_percent = AVRC_VOLUME_TO_PERCENT(callbackParams->set_abs_vol.volume);
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT volume: %d (%d%%)", volumeAvrc, volume_percent);
+#endif
             set_volume_avrc(volumeAvrc);
         }
         break;
 
         case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT: {
             uint8_t eventId = callbackParams->reg_ntf.event_id;
+#if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT -> %s (0x%x), param: 0x%"PRIx32, get_avrc_notification_name(eventId), eventId, callbackParams->reg_ntf.event_parameter);
-            
+#endif
             switch (eventId) {
                 case ESP_AVRC_RN_VOLUME_CHANGE: {
                     uint8_t volumeAvrc;
@@ -98,7 +105,7 @@ static void avrc_target_event_handler(uint16_t event, void *params) {
         break;
 
         default: {
-            ESP_LOGE(BtAvrcTargetTag, "%s() [TG] unhandled event: %d", __func__, event);
+            ESP_LOGW(BtAvrcTargetTag, "%s() [TG] unhandled event: %d", __func__, event);
         }
         break;
     }
