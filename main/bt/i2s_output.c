@@ -96,13 +96,19 @@ esp_err_t start_i2s_output() {
 }
 
 esp_err_t delete_i2s_output() {
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
     ESP_LOGI(BtI2sOutputTag, "delete_i2s_output() - Stopping I2S task");
+#endif
+
     esp_err_t err = stop_i2s_output_task();
     if (err != ESP_OK) {
         ESP_LOGW(BtI2sOutputTag, "stop_i2s_output_task() failed while shutting down I2S output task (%d)", err);
     }
 
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
     ESP_LOGI(BtI2sOutputTag, "delete_i2s_output() - Deleting I2S channel");
+#endif
+
     err = delete_i2s_channel();
     if (err != ESP_OK) {
         ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%d)", err);
@@ -200,7 +206,9 @@ static esp_err_t delete_i2s_channel() {
 }
 
 static esp_err_t start_i2s_output_task() {
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
     ESP_LOGI(BtI2sOutputTag, "Starting I2S output");
+#endif
 
     esp_err_t err = ESP_OK;
 
@@ -354,8 +362,9 @@ static void i2s_task_handler(void* arg) {
 
                     case RingbufferPrefetching:
                     case RingbufferWriting: {
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
                         ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - Draining buffer before switching to 'RingbufferPaused' mode", get_ringbuffer_mode_name(currentMode));
-
+#endif
                         bool shouldWrite = true;
                         do {
                             const TickType_t DrainWaitTimeInTicks = 10;
@@ -538,7 +547,11 @@ static esp_err_t notify_a2dp_audio_paused() {
 
 static esp_err_t notify_i2s_task(i2s_writer_notification_t notificationType) {
     const UBaseType_t notificationIndex = I2STaskNotificationIndex;
+
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
     ESP_LOGI(BtI2sRingbufferTag, "Notifying I2S task -> Slot %d - Type '%s'", notificationIndex, get_i2s_task_notificationType(notificationType));
+#endif
+
     const BaseType_t outcome = xTaskNotifyIndexed(s_i2s_task_handle, notificationIndex, notificationType, eSetValueWithOverwrite);
     return outcome == pdPASS ? ESP_OK : ESP_FAIL;
 }
@@ -574,7 +587,9 @@ static void get_dma_buffer_size_and_buffer_count_for_data_buffer_size(size_t bat
         *pBytesToTakeFromRingBuffer = FrameNumMaxInBytes;
     }
     
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
     ESP_LOGI(BtI2sOutputTag, "DMA dma_frame_num: %lu - DMA dma_desc_num: %lu - I2S write size: %u | Batch size %u, Sample size %d, Channels %d", *pDmaFrameNum, *pDmaDescNum, *pBytesToTakeFromRingBuffer, batchSize, sampleBits, channelCount);
+#endif
 }
 
 static const char* get_ringbuffer_mode_name(ringbuffer_mode_t ringbufferMode) {
