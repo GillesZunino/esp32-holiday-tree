@@ -21,12 +21,6 @@ menu "Holiday Tree"
                 Select to compile for development boards. This option allows JTAG debugging
     endchoice
 
-    config  HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
-        bool "Log I2S data processing"
-        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = y
-        help
-            Emit detailed logging about I2S data processing including ring buffer depth, rate of A2DP data ...
-
     config HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR
         string "Bluetooth Device Name"
         default "Holiday Tree"
@@ -76,5 +70,11 @@ menu "Holiday Tree"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
         help
             Emit detailed logging about I2S processing
+
+    config  HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+        bool "Log I2S data processing"
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
+        help
+            Emit detailed logging about I2S data processing including ring buffer depth, rate of A2DP data ...
 
 endmenu
