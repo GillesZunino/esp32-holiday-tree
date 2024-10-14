@@ -53,4 +53,10 @@ menu "Holiday Tree"
         help
             Emit detailed logging about Bluetooth GAP processing
 
+    config  HOLIDAYTREE_BT_A2DP_LOG
+        bool "Log Bluetooth A2DP processing"
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
+        help
+            Emit detailed logging about Bluetooth A2DP processing
+
 endmenu

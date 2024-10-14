@@ -21,7 +21,7 @@ static const char* BtA2dTag = "bt_a2d";
 
 
 // Bluetooth A2D application layer delay in 1/10 ms units
-static const uint16_t ApplicatiobDelayInOneOverTenMs = 5 * 10; // 50 * 1/10 ms = 5 ms
+static const uint16_t ApplicationDelayInOneOverTenMs = 5 * 10; // 50 * 1/10 ms = 5 ms
 
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
@@ -86,8 +86,10 @@ static void a2d_event_handler(uint16_t event, void* param) {
     esp_a2d_cb_param_t *callbackParams = (esp_a2d_cb_param_t *) param;
     switch (event) {
         case ESP_A2D_CONNECTION_STATE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             char bdaStr[18];
             ESP_LOGI(BtA2dTag, "ESP_A2D_CONNECTION_STATE_EVT %s remote [%s]", get_a2d_connection_state_name(callbackParams->conn_stat.state), get_bda_string(callbackParams->conn_stat.remote_bda, bdaStr));
+#endif
             switch (callbackParams->conn_stat.state) {
                 case ESP_A2D_CONNECTION_STATE_CONNECTING: {
                     esp_err_t err = create_i2s_output();
@@ -135,11 +137,12 @@ static void a2d_event_handler(uint16_t event, void* param) {
         break;
 
         case ESP_A2D_AUDIO_STATE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s", get_a2d_audio_state_name(callbackParams->audio_stat.state));
-
+#endif
             esp_err_t err = set_i2s_output_audio_state(callbackParams->audio_stat.state);
             if (err != ESP_OK) {
-                ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %d", get_a2d_audio_state_name(callbackParams->audio_stat.state), err);
+                ESP_LOGE(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %d", get_a2d_audio_state_name(callbackParams->audio_stat.state), err);
             }
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
@@ -153,30 +156,39 @@ static void a2d_event_handler(uint16_t event, void* param) {
         break;
 
         case ESP_A2D_AUDIO_CFG_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT codec types (0x%x)", callbackParams->audio_cfg.mcc.type);
             char* codecStr[5];
             get_a2d_media_codec_names(callbackParams->audio_cfg.mcc.type, codecStr);
             for (uint8_t index = 0; (codecStr[index] != NULL) && (index < 5); index++) {
                 ESP_LOGI(BtA2dTag, "\t%s", codecStr[index]);
             }
+#endif
 
             // We currently only support the SBC codec
             switch (callbackParams->audio_cfg.mcc.type) {
                 case ESP_A2D_MCT_SBC: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
                     ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT - SBC codec configuration 0x%x-0x%x-0x%x-0x%x",
                         callbackParams->audio_cfg.mcc.cie.sbc[0],
                         callbackParams->audio_cfg.mcc.cie.sbc[1],
                         callbackParams->audio_cfg.mcc.cie.sbc[2],
                         callbackParams->audio_cfg.mcc.cie.sbc[3]);
+#endif
 
                     // Sample frequency
                     uint8_t samplingFrequencyBits = callbackParams->audio_cfg.mcc.cie.sbc[0] & A2D_SBC_IE_SAMP_FREQ_MSK;
                     uint32_t sampleFrequency = get_sample_frequency(samplingFrequencyBits);
+
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
                     ESP_LOGI(BtA2dTag, "\tSample frequency %s (%lu)", get_a2d_sbc_sample_frequency_name(samplingFrequencyBits), sampleFrequency);
+#endif
 
                     // Channel mode
                     uint8_t channelModeBits = callbackParams->audio_cfg.mcc.cie.sbc[0] & A2D_SBC_IE_CH_MD_MSK;
                     uint8_t channelCount = get_channel_count(channelModeBits);
+
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
                     ESP_LOGI(BtA2dTag, "\tChannel mode %s (0x%x) - Channel count %d", get_a2d_sbc_channel_mode_name(channelModeBits), channelModeBits, channelCount);
 
                     // Blocks and sub bands
@@ -190,6 +202,7 @@ static void a2d_event_handler(uint16_t event, void* param) {
 
                     // Min and max bit pool
                     ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %d | max bit pool %d", callbackParams->audio_cfg.mcc.cie.sbc[2], callbackParams->audio_cfg.mcc.cie.sbc[3]);
+#endif
 
                     // Configure I2S output with the paramters extracted from the codec configuration - SBC is always 16 bits data
                     esp_err_t err = configure_i2s_output(sampleFrequency, I2S_DATA_BIT_WIDTH_16BIT, channelCount);
@@ -208,34 +221,44 @@ static void a2d_event_handler(uint16_t event, void* param) {
         break;
 
         case ESP_A2D_MEDIA_CTRL_ACK_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_MEDIA_CTRL_ACK_EVT %s - %s", get_a2d_media_command_name(callbackParams->media_ctrl_stat.cmd), get_a2d_media_command_ack_name(callbackParams->media_ctrl_stat.status));
+#endif   
         }
         break;
 
         case ESP_A2D_PROF_STATE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_PROF_STATE_EVT %s (0x%x)", get_a2d_init_state_name(callbackParams->a2d_prof_stat.init_state), callbackParams->a2d_prof_stat.init_state);
+#endif
         }
         break;
 
         case ESP_A2D_SNK_PSC_CFG_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_PSC_CFG_EVT %s (0x%02x)", get_a2d_protocol_service_capabilities_name(callbackParams->a2d_psc_cfg_stat.psc_mask), callbackParams->a2d_psc_cfg_stat.psc_mask);
             bool delayReportingSupported = (callbackParams->a2d_psc_cfg_stat.psc_mask & ESP_A2D_PSC_DELAY_RPT) == ESP_A2D_PSC_DELAY_RPT;
             ESP_LOGI(BtA2dTag, "\tDelay reporting %s", delayReportingSupported ? "supported" : "UNsupported");
+#endif
         }
         break;
 
         case ESP_A2D_SNK_SET_DELAY_VALUE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             if (callbackParams->a2d_set_delay_value_stat.set_state == ESP_A2D_SET_SUCCESS) {
                 ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT delay value %u (in 1/10 ms), %u", callbackParams->a2d_set_delay_value_stat.delay_value, callbackParams->a2d_set_delay_value_stat.delay_value / 10);
             } else {
                 ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT failed");
             }
+#endif
         }
         break;
 
         case ESP_A2D_SNK_GET_DELAY_VALUE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_GET_DELAY_VALUE_EVT delay value %u (in 1/10 ms), %u", callbackParams->a2d_get_delay_value_stat.delay_value, callbackParams->a2d_get_delay_value_stat.delay_value / 10);
-            esp_err_t err = esp_a2d_sink_set_delay_value(callbackParams->a2d_get_delay_value_stat.delay_value + ApplicatiobDelayInOneOverTenMs);
+#endif
+            esp_err_t err = esp_a2d_sink_set_delay_value(callbackParams->a2d_get_delay_value_stat.delay_value + ApplicationDelayInOneOverTenMs);
             if (err != ESP_OK) {
                 char err_msg[64];
                 ESP_LOGE(BtA2dTag, "a2d_event_handler() failed - Unable to esp_a2d_sink_set_delay_value() %s", esp_err_to_name_r(err, err_msg, sizeof(err_msg)));
