@@ -91,7 +91,7 @@ static esp_err_t start_bluetooth() {
 }
 
 static esp_err_t set_device_name(const char* deviceName) {
-    ESP_RETURN_ON_ERROR(esp_bt_gap_set_device_name(CONFIG_HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR), BtAppTag, "esp_bt_dev_set_device_name(CONFIG_HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR) failed");
+    ESP_RETURN_ON_ERROR(esp_bt_gap_set_device_name(CONFIG_HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR), BtAppTag, "esp_bt_gap_set_device_name(CONFIG_HOLIDAYTREE_BR_EDR_DEVICE_NAME_STR) failed");
     return ESP_OK;
 }
 
