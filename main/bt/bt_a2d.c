@@ -116,14 +116,16 @@ static void a2d_event_handler(uint16_t event, void* param) {
                 break;
 
                 case ESP_A2D_CONNECTION_STATE_DISCONNECTED: {
-                    esp_err_t err = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-                    if (err == ESP_OK) {
-                        err = delete_i2s_output();
-                        if (err != ESP_OK) {
-                            char errMsg[64];
-                            ESP_LOGE(BtA2dTag, "stop_i2s_output() failed %s", esp_err_to_name_r(err, errMsg, sizeof(errMsg)));
-                        }
-                    } else {
+                    // Shutdown I2S output
+                    esp_err_t err = delete_i2s_output();
+                    if (err != ESP_OK) {
+                        char errMsg[64];
+                        ESP_LOGE(BtA2dTag, "delete_i2s_output() failed %s", esp_err_to_name_r(err, errMsg, sizeof(errMsg)));
+                    }
+
+                    // Make device discoverable again so a new connection can be established
+                    err = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+                    if (err != ESP_OK) {
                         char errMsg[64];
                         ESP_LOGE(BtA2dTag, "esp_bt_gap_set_scan_mode() failed %s", esp_err_to_name_r(err, errMsg, sizeof(errMsg)));
                     }
