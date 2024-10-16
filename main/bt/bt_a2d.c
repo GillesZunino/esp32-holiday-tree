@@ -24,18 +24,14 @@ static const char* BtA2dTag = "bt_a2d";
 static const uint16_t ApplicationDelayInOneOverTenMs = 5 * 10; // 50 * 1/10 ms = 5 ms
 
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
-// Keep track of the number of audio packets received - Only in development
-static uint32_t s_audio_packets_count = 0;
-
-// Keep track of the average number of bytes per sample to write - Only in development
-static uint32_t s_audio_average_packet_size = 0;
-static uint64_t s_audio_total_bytes_received = 0;
-#endif
-
-
 static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* param);
 static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
+
+#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+static void log_icoming_a2d_data_stats(uint32_t len);
+static void reset_incoming_a2d_data_stats(esp_a2d_cb_param_t* callbackParams);
+#endif
+
 static void a2d_event_handler(uint16_t event, void *param);
 
 static uint32_t get_sample_frequency(uint8_t sampleFrequency);
@@ -71,6 +67,21 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len) {
     }
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+    log_icoming_a2d_data_stats(len);
+#endif
+}
+
+#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+
+// Keep track of the number of audio packets received - Only in development
+static uint32_t s_audio_packets_count = 0;
+
+// Keep track of the average number of bytes per sample to write - Only in development
+static uint32_t s_audio_average_packet_size = 0;
+static uint64_t s_audio_total_bytes_received = 0;
+
+
+static void log_icoming_a2d_data_stats(uint32_t len) {
     s_audio_packets_count++;
     
     s_audio_total_bytes_received += len;
@@ -79,8 +90,17 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len) {
     if (s_audio_packets_count % 100 == 0) {
         ESP_LOGI(BtA2dTag, "Audio packet count %"PRIu32" - Average buffer size %"PRIu32, s_audio_packets_count, s_audio_average_packet_size);
     }
-#endif
 }
+
+static void reset_incoming_a2d_data_stats(esp_a2d_cb_param_t* callbackParams) {
+    if (callbackParams->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
+        s_audio_packets_count = 0;
+        s_audio_average_packet_size = 0;
+        s_audio_total_bytes_received = 0;
+    }
+}
+
+#endif
 
 static void a2d_event_handler(uint16_t event, void* param) {
     esp_a2d_cb_param_t *callbackParams = (esp_a2d_cb_param_t *) param;
@@ -148,11 +168,7 @@ static void a2d_event_handler(uint16_t event, void* param) {
             }
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
-            if (callbackParams->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
-                s_audio_packets_count = 0;
-                s_audio_average_packet_size = 0;
-                s_audio_total_bytes_received = 0;
-            }
+            reset_incoming_a2d_data_stats(callbackParams);
 #endif
         }
         break;
