@@ -10,5 +10,7 @@
 uint8_t get_volume_avrc();
 void set_volume_avrc(uint8_t volumeAvrc);
 
+void reset_volume_avrc_to_default();
+
 uint8_t get_volume_percent();
 float get_volume_factor();

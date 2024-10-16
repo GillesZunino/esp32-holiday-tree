@@ -114,6 +114,8 @@ esp_err_t delete_i2s_output() {
         ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%d)", err);
     }
 
+    reset_volume_avrc_to_default();
+
     return err;
 }
 
