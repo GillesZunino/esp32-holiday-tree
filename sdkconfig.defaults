@@ -5,6 +5,9 @@
 # Raise IPC task stack size to allow gpio_install_isr_service() to operate properly
 CONFIG_IPC_TASK_STACK_SIZE=1280
 
+# Reduce 'main' task stack size to save memory
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=2048
+
 # Enable Classic Bluetooth (BR/EDR), turn off Bluetooth Low Energy (BLE)
 CONFIG_BT_ENABLED=y
 CONFIG_BT_BLE_ENABLED=n
