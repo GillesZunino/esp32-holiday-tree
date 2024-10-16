@@ -89,7 +89,6 @@ void app_main(void) {
     ESP_ERROR_CHECK(configure_led_string(LedDataGPIONum, LedSwitchGPIONum));
     ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
 
-    while (true) {
-        vTaskDelay(portMAX_DELAY);
-    }
+    // Dispatch GPIO events - This function blocks with portMAX_DELAY as timeout and never returns
+    gpio_events_queue_dispatch();
 }
