@@ -76,7 +76,7 @@ static void i2s_task_handler(void* arg);
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer);
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample);
 
-static i2s_writer_notification_t accept_i2s_task_notification_with_delay(uint32_t delayMs);
+static i2s_writer_notification_t accept_i2s_task_notification_with_delay(TickType_t delayTicks);
 
 static esp_err_t notify_a2dp_audio_active();
 static esp_err_t notify_a2dp_audio_paused();
@@ -320,7 +320,7 @@ static void i2s_task_handler(void* arg) {
     ringbuffer_mode_t currentMode = RingbufferNone;
 
     for (;;) {
-        uint32_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? 5 : portMAX_DELAY;
+        TickType_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? portMAX_DELAY;;
         i2s_writer_notification_t notification = accept_i2s_task_notification_with_delay(notificationDelay);
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
@@ -519,12 +519,11 @@ static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
     }
 }
 
-static i2s_writer_notification_t accept_i2s_task_notification_with_delay(uint32_t delayMs) {
+static i2s_writer_notification_t accept_i2s_task_notification_with_delay(TickType_t delayTicks) {
     uint32_t ulNotificationValue = 0UL;
     const UBaseType_t notificationIndex = I2STaskNotificationIndex;
-    const TickType_t ticksToWait = delayMs != portMAX_DELAY ? pdMS_TO_TICKS(delayMs) : portMAX_DELAY;
-    BaseType_t notificationWaitOutcome = xTaskNotifyWaitIndexed(notificationIndex, 0x0, 0x0, &ulNotificationValue, ticksToWait);
-    ESP_LOGD(BtI2sRingbufferTag, "accept_i2s_task_notification_with_delay() - xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu] [Timeout: %lu]", notificationWaitOutcome, ulNotificationValue, delayMs);
+    BaseType_t notificationWaitOutcome = xTaskNotifyWaitIndexed(notificationIndex, 0x0, 0x0, &ulNotificationValue, delayTicks);
+    ESP_LOGD(BtI2sRingbufferTag, "accept_i2s_task_notification_with_delay() - xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu] [Timeout: %lu ticks]", notificationWaitOutcome, ulNotificationValue, delayTicks);
     switch (notificationWaitOutcome) {
         case pdTRUE:
             // Notification received
