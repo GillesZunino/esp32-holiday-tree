@@ -73,6 +73,10 @@ static esp_err_t stop_i2s_output_task();
 
 static void i2s_task_handler(void* arg);
 
+#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+static void log_ringbuffer_incoming_stats(uint32_t size);
+#endif
+
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer);
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample);
 
@@ -270,19 +274,7 @@ esp_err_t set_i2s_output_audio_state(esp_a2d_audio_state_t audioState) {
 
 uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
-    static uint64_t numberOfCalls = 0;
-
-    numberOfCalls++;
-
-    if (numberOfCalls % 100 == 0) {
-        UBaseType_t bytesWaitingToBeRetrieved = 0;
-        vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
-
-        UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
-        float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
-
-        ESP_LOGI(BtI2sOutputTag, "write_to_i2s_output() Writing %lu bytes | Ringbuffer stats - Waiting: %u bytes - Free: %u bytes - %f%% used", size, bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
-    }
+    log_ringbuffer_incoming_stats(size);
 #endif
 
     const uint8_t MaxTries = 5;
@@ -316,6 +308,26 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
 
     return 0;
 }
+
+#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+
+static void log_ringbuffer_incoming_stats(uint32_t size) {
+    static uint64_t numberOfCalls = 0;
+
+    numberOfCalls++;
+
+    if (numberOfCalls % 100 == 0) {
+        UBaseType_t bytesWaitingToBeRetrieved = 0;
+        vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
+
+        UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
+        float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
+
+        ESP_LOGI(BtI2sOutputTag, "write_to_i2s_output() Writing %lu bytes | Ringbuffer stats - Waiting: %u bytes - Free: %u bytes - %f%% used", size, bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
+    }
+}
+
+#endif
 
 static void i2s_task_handler(void* arg) {
     ringbuffer_mode_t currentMode = RingbufferNone;
