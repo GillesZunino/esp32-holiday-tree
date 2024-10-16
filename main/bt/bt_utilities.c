@@ -155,7 +155,7 @@ const char* get_avrc_notification_name(uint8_t eventId) {
     }
 }
 
-const char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
+char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
     if (featuresStr == NULL) {
         return NULL;
     }
@@ -190,7 +190,7 @@ const char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) 
     return featuresStr;
 }
 
-const char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
+char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
     if (featuresStr == NULL) {
         return NULL;
     }
@@ -260,7 +260,7 @@ const char* get_a2d_audio_state_name(esp_a2d_audio_state_t audioState) {
     }
 }
 
-const char** get_a2d_media_codec_names(esp_a2d_mct_t codecType, char* codecNames[5]) {
+char** get_a2d_media_codec_names(esp_a2d_mct_t codecType, char* codecNames[5]) {
     if (codecNames == NULL) {
         return NULL;
     }
