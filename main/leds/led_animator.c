@@ -24,8 +24,10 @@ const UBaseType_t LedAnimationTaskNotificationIndex = 0;
 static TaskHandle_t s_animate_led_task_handle = NULL;
 
 
+#if CONFIG_HOLIDAYTREE_LEDS_LOG
 static const char* get_led_task_notification_name(led_animation_task_notification_t notification);
 static const char* get_led_effect_name(led_known_effects_t ledEffect);
+#endif
 
 
 esp_err_t start_led_string_effect(led_known_effects_t ledEffect) {
@@ -147,6 +149,8 @@ static void animate_led_task(void* arg) {
     }
 }
 
+#if CONFIG_HOLIDAYTREE_LEDS_LOG
+
 static const char* get_led_task_notification_name(led_animation_task_notification_t notification) {
     switch (notification) {
         case LedAnimationTaskNotificationNone:
@@ -166,3 +170,5 @@ static const char* get_led_effect_name(led_known_effects_t ledEffect) {
             return "N/A";
     }
 }
+
+#endif
