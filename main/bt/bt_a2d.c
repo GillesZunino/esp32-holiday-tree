@@ -29,7 +29,7 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
 static void log_icoming_a2d_data_stats(uint32_t len);
-static void reset_incoming_a2d_data_stats(esp_a2d_cb_param_t* callbackParams);
+static void reset_incoming_a2d_data_stats(const esp_a2d_cb_param_t* const callbackParams);
 #endif
 
 static void a2d_event_handler(uint16_t event, void *param);
@@ -92,7 +92,7 @@ static void log_icoming_a2d_data_stats(uint32_t len) {
     }
 }
 
-static void reset_incoming_a2d_data_stats(esp_a2d_cb_param_t* callbackParams) {
+static void reset_incoming_a2d_data_stats(const esp_a2d_cb_param_t* const callbackParams) {
     if (callbackParams->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
         s_audio_packets_count = 0;
         s_audio_average_packet_size = 0;
@@ -103,7 +103,7 @@ static void reset_incoming_a2d_data_stats(esp_a2d_cb_param_t* callbackParams) {
 #endif
 
 static void a2d_event_handler(uint16_t event, void* param) {
-    esp_a2d_cb_param_t *callbackParams = (esp_a2d_cb_param_t *) param;
+    const esp_a2d_cb_param_t* const callbackParams = (const esp_a2d_cb_param_t * const) param;
     switch (event) {
         case ESP_A2D_CONNECTION_STATE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG

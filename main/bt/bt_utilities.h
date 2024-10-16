@@ -9,7 +9,7 @@
 #include <esp_a2dp_api.h>
 
 
-const char* get_bda_string(esp_bd_addr_t bda, char str[18]);
+const char* get_bda_string(const esp_bd_addr_t bda, char str[18]);
 
 const char* get_gap_link_key_type_name(esp_bt_link_key_type_t linkKeyType);
 const char* get_gap_encryption_mode(esp_bt_enc_mode_t encryptionMode);

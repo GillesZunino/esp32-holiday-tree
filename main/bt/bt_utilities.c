@@ -12,7 +12,7 @@
 #include "bt/bt_utilities.h"
 
 
-const char* get_bda_string(esp_bd_addr_t bda, char str[18]) {
+const char* get_bda_string(const esp_bd_addr_t bda, char str[18]) {
     if ((bda == NULL) || (str == NULL)) {
         return NULL;
     }
