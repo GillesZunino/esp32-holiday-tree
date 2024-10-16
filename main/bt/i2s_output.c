@@ -302,9 +302,7 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
         }
     } while (shouldTry);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
     ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out trying to write to ring buffer or ring buffer overflow - Dropped %lu bytes", size);
-#endif
 
     return 0;
 }
