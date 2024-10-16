@@ -40,7 +40,13 @@ menu "Holiday Tree"
         depends on HOLIDAYTREE_BR_EDR_LEGACY_PAIRING_REQUIRE_STATIC_PIN
         help
             Static pin to request when pairing
-            
+
+    config  HOLIDAYTREE_LEDS_LOG
+        bool "Log LEDs animation processing"
+        default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
+        help
+            Emit detailed logging about LEDs animation processing
+
     config  HOLIDAYTREE_BT_GAP_LOG
         bool "Log Bluetooth GAP processing"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n

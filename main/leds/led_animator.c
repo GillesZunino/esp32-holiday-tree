@@ -107,7 +107,9 @@ static void animate_led_task(void* arg) {
             case LedAnimationTaskNotificationPause:
                 // Wait (portMAX_DELAY = infinite timeout) to be awaken up to animate LEDs
                 notification = accept_task_notification_with_delay(portMAX_DELAY);
+#if CONFIG_HOLIDAYTREE_LEDS_LOG
                 ESP_LOGI(LedStringTag, "animate_led_task() received notification '%s' (%d)", get_led_task_notification_name(notification), notification);
+#endif
             break;
 
             default: {
@@ -115,7 +117,9 @@ static void animate_led_task(void* arg) {
                 if (notification >= LedAnimationTaskNotificationEffectMin) {
                     led_known_effects_t ledEffect = notification;
 
+#if CONFIG_HOLIDAYTREE_LEDS_LOG
                     ESP_LOGI(LedStringTag, "animate_led_task() Trying to switch LED effect to '%s' (%d)", get_led_effect_name(ledEffect), notification);
+#endif
 
                     if (ledEffect < LedEffectMax) {
                         turn_led_string_on_off(LedStringOn);
@@ -128,7 +132,10 @@ static void animate_led_task(void* arg) {
                                 ESP_LOGW(LedStringTag, "animate_led_task() unable to start effect (%d) - Effect not implemented", ledEffect);
                             break;
                         }
+
+#if CONFIG_HOLIDAYTREE_LEDS_LOG
                         ESP_LOGI(LedStringTag, "animate_led_task() effect exited with notification (%u)", notification);
+#endif
                         turn_led_string_on_off(LedStringOff);
                     } else {
                         ESP_LOGE(LedStringTag, "animate_led_task() unable to start effect (%d) - Unknown effect", ledEffect);
