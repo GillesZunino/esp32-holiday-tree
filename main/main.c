@@ -90,8 +90,6 @@ void app_main(void) {
     ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
 
     while (true) {
-        // Make sure the task yields periodically to avoid triggereing the Task Watchdog
-        const int TimeToWaitBetweenCyclesInMs = CONFIG_ESP_TASK_WDT_TIMEOUT_S * 1000;
-        vTaskDelay(pdMS_TO_TICKS(TimeToWaitBetweenCyclesInMs));
+        vTaskDelay(portMAX_DELAY);
     }
 }
