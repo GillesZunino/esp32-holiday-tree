@@ -223,7 +223,7 @@ static esp_err_t start_i2s_output_task() {
     }
 
     // Create output task
-    BaseType_t taskCreated = xTaskCreate(i2s_task_handler, "BtI2STask", 2048, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle);
+    BaseType_t taskCreated = xTaskCreate(i2s_task_handler, "ht-BT-I2S", 2048, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;
     if (err != ESP_OK) {
         ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xTaskCreate() failed");

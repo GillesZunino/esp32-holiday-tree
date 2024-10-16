@@ -44,7 +44,7 @@ static void gpio_isr_dispatch_task(void* arg) {
 static esp_err_t configure_isr_task() {
     s_gpio_isr_dispatch_queue = xQueueCreate(10, sizeof(void *));
     if (s_gpio_isr_dispatch_queue != NULL) {
-        BaseType_t taskCreateOutcome = xTaskCreate(gpio_isr_dispatch_task, "GPIO ISR Task", 2048, NULL, 10, &s_gpio_isr_taskHandle);
+        BaseType_t taskCreateOutcome = xTaskCreate(gpio_isr_dispatch_task, "ht-gpio-isr", 1920, NULL, 10, &s_gpio_isr_taskHandle);
         if (taskCreateOutcome == pdTRUE) {
             return ESP_OK;
         } else {

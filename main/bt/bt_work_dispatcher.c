@@ -77,7 +77,7 @@ esp_err_t start_bluetooth_dispatcher_task() {
         return ESP_FAIL;
     }
 
-    BaseType_t taskCreated = xTaskCreate(queue_consumer_task, "BT Consumer", 3072, NULL, 10, &s_bt_app_task_handle);
+    BaseType_t taskCreated = xTaskCreate(queue_consumer_task, "ht-BT-dispatch", 2560, NULL, 10, &s_bt_app_task_handle);
     if (taskCreated != pdPASS) {
         ESP_LOGE(BtWorkQueueTag, "%s() xTaskCreate() failed", __func__);
 

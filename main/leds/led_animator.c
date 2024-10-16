@@ -30,7 +30,7 @@ static const char* get_led_effect_name(led_known_effects_t ledEffect);
 
 esp_err_t start_led_string_effect(led_known_effects_t ledEffect) {
     if (s_animate_led_task_handle == NULL) {
-        BaseType_t outcome = xTaskCreate(animate_led_task, "leds_animate", 3072, NULL, 10, &s_animate_led_task_handle);
+        BaseType_t outcome = xTaskCreate(animate_led_task, "ht-leds-anim", 3072, NULL, 10, &s_animate_led_task_handle);
         if (outcome != pdPASS) {
             s_animate_led_task_handle = NULL;
             return ESP_FAIL;
