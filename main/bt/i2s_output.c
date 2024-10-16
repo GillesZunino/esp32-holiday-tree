@@ -321,7 +321,7 @@ static void i2s_task_handler(void* arg) {
     ringbuffer_mode_t currentMode = RingbufferNone;
 
     for (;;) {
-        TickType_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? portMAX_DELAY;;
+        TickType_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? 2 : portMAX_DELAY;
         i2s_writer_notification_t notification = accept_i2s_task_notification_with_delay(notificationDelay);
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
