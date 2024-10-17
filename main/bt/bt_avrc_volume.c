@@ -18,8 +18,8 @@
 //  * Linear:               get_linear_volume(volumeAvrc)
 //  * Simple Exponential:   get_exponential_volume(volumeAvrc)
 
-static float get_linear_volume(uint8_t volumeAvrc);
-static float get_exponential_volume(uint8_t volumeAvrc);
+[[maybe_unused]] static float get_linear_volume(uint8_t volumeAvrc);
+[[maybe_unused]] static float get_exponential_volume(uint8_t volumeAvrc);
 
 // Define the function to use in the macro below
 #define AVRC_VOLUME_TO_FACTOR(x) get_exponential_volume(x)
@@ -79,11 +79,11 @@ float get_volume_factor() {
     return volumeFactor;
 }
 
-static float get_linear_volume(uint8_t volumeAvrc) {
+[[maybe_unused]] static float get_linear_volume(uint8_t volumeAvrc) {
     const float VolumeMultiplier = 2.1f;
     return (VolumeMultiplier * volumeAvrc) / 127.0f;
 }
 
-static float get_exponential_volume(uint8_t volumeAvrc) {
+[[maybe_unused]] static float get_exponential_volume(uint8_t volumeAvrc) {
     return pow(2.0f, (float) volumeAvrc / 127.0f) - 1.0f;
 }
