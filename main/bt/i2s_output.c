@@ -118,8 +118,6 @@ esp_err_t delete_i2s_output() {
         ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%d)", err);
     }
 
-    reset_volume_avrc_to_default();
-
     return err;
 }
 
@@ -226,7 +224,7 @@ static esp_err_t start_i2s_output_task() {
         goto cleanup;
     }
 
-    // Create output task - It runs on the core not assigned to Bluedroid
+    // Create output task - It runs on the core not assigned to BlueDroid
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
     BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task_handler, "ht-BT-I2S", 2048, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;

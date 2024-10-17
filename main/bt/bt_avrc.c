@@ -7,6 +7,7 @@
 #include <esp_avrc_api.h>
 
 
+#include "bt/bt_avrc_volume.h"
 #include "bt/bt_work_dispatcher.h"
 #include "bt/bt_avrc_controller.h"
 #include "bt/bt_avrc_target.h"
@@ -53,6 +54,9 @@ esp_err_t setup_avrc_profile() {
     // This is mostly because we would like to get metadata about the track playing and AVRC TG does not allow metadata exchange
     // To receive metadata, the Holiday Tree needs to be an AVRC Controller and subscribe for target notificaitons
     //
+
+    // Ensure output volume is set to default
+    reset_volume_to_default();
 
     // Initialize AVRC Controller module
     ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BtAvrcTag, "esp_avrc_ct_init() failed");

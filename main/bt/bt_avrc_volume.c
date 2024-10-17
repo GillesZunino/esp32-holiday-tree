@@ -12,17 +12,29 @@
 
 
 
-static const uint8_t StartVolumePercent = 30;
+// -----------------------------------------------------------------------------------
+// There are many ways to calculate the multiplier factor applied to all sound samples
+// CHoose between:
+//  * Linear:               get_linear_volume(volumeAvrc)
+//  * Simple Exponential:   get_exponential_volume(volumeAvrc)
+
+static float get_linear_volume(uint8_t volumeAvrc);
+static float get_exponential_volume(uint8_t volumeAvrc);
+
+// Define the function to use in the macro below
+#define AVRC_VOLUME_TO_FACTOR(x) get_exponential_volume(x)
+// -----------------------------------------------------------------------------------
+
+
+
+static const uint8_t DefaultVolumeAvrc = PERCENT_VOLUME_TO_AVRC(30);
 
 
 static _lock_t s_volume_lock;
-static uint8_t s_volume_avrc = PERCENT_VOLUME_TO_AVRC(StartVolumePercent);
-static uint8_t s_volume_percent = StartVolumePercent;
+static uint8_t s_volume_avrc = 0;
+static uint8_t s_volume_percent = 0;
 static float s_volume_factor = 0.0f;
 
-
-float get_linear_volume(uint8_t volumeAvrc);
-float get_exponential_volume(uint8_t volumeAvrc);
 
 
 uint8_t get_volume_avrc() {
@@ -43,12 +55,12 @@ void set_volume_avrc(uint8_t volumeAvrc) {
         //  * Linear:               get_linear_volume(volumeAvrc)
         //  * Simple Exponential:   get_exponential_volume(volumeAvrc)
         //
-        s_volume_factor = get_exponential_volume(volumeAvrc);
+        s_volume_factor = AVRC_VOLUME_TO_FACTOR(volumeAvrc);
     _lock_release(&s_volume_lock);
 }
 
-void reset_volume_avrc_to_default() {
-    set_volume_avrc(PERCENT_VOLUME_TO_AVRC(StartVolumePercent));
+void reset_volume_to_default() {
+    set_volume_avrc(DefaultVolumeAvrc);
 }
 
 uint8_t get_volume_percent() {
@@ -67,11 +79,11 @@ float get_volume_factor() {
     return volumeFactor;
 }
 
-float get_linear_volume(uint8_t volumeAvrc) {
+static float get_linear_volume(uint8_t volumeAvrc) {
     const float VolumeMultiplier = 2.1f;
     return (VolumeMultiplier * volumeAvrc) / 127.0f;
 }
 
-float get_exponential_volume(uint8_t volumeAvrc) {
+static float get_exponential_volume(uint8_t volumeAvrc) {
     return pow(2.0f, (float) volumeAvrc / 127.0f) - 1.0f;
 }
