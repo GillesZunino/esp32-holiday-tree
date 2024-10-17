@@ -290,9 +290,7 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
             tries++;
             shouldTry = tries <= MaxTries;
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
-            ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out / Failed to write to ring buffer - %s (%d)", shouldTry ? "RETRY" : "NO RETRY", tries);
-#endif
+            ESP_LOGW(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out / Failed to write to ring buffer - %s (%d)", shouldTry ? "RETRY" : "NO RETRY", tries);
 
             if (shouldTry) {
                 vTaskDelay(WaitTimeInTicks);
