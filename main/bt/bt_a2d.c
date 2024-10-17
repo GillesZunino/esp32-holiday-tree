@@ -24,7 +24,7 @@ static const char* BtA2dTag = "bt_a2d";
 static const uint16_t ApplicationDelayInOneOverTenMs = 5 * 10; // 50 * 1/10 ms = 5 ms
 
 
-static void a2d_event_callback(esp_a2d_cb_event_t event, const esp_a2d_cb_param_t* const params);
+static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* params);
 static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
 
 #if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
@@ -53,7 +53,7 @@ esp_err_t setup_a2d_profile() {
     return ESP_OK;
 }
 
-static void a2d_event_callback(esp_a2d_cb_event_t event, const esp_a2d_cb_param_t* const params) {
+static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* params) {
     bool eventEnqueued = queue_bluetooth_workitem(a2d_event_handler, event, params, sizeof(esp_a2d_cb_param_t));
     if (!eventEnqueued) {
         ESP_LOGE(BtA2dTag, "%s() could not queue event %d to Bluetooth dispatcher", __func__, event);
