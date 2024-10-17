@@ -26,7 +26,8 @@ esp_err_t setup_gap_profile() {
     return ESP_OK;
 }
 
-static void bt_gap_callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
+static void bt_gap_callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t* rawParam) {
+    const esp_bt_gap_cb_param_t* const param = (const esp_bt_gap_cb_param_t* const) rawParam;
     switch (event) {
         case ESP_BT_GAP_AUTH_CMPL_EVT: {
             if (param->auth_cmpl.stat == ESP_BT_STATUS_SUCCESS) {
