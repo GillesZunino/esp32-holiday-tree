@@ -33,7 +33,7 @@ static bool queue_workitem_internal(bluetooth_workitem_t* workItem);
 static void queue_consumer_task(void* arg);
 
 
-bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, void* params, size_t paramsLen) {
+bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, const void* const params, size_t paramsLen) {
     ESP_LOGD(BtWorkQueueTag, "%s() event: 0x%x, param len: %d", __func__, eventId, paramsLen);
 
     if ((s_bt_app_task_queue != NULL) && (s_bt_app_task_handle != NULL)) {

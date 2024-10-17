@@ -34,7 +34,7 @@ static const uint8_t NotificationPlayPositionChangedTransactionLabel = 4;
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_notifications_capabilities = {0};
 
 
-static void avrc_controller_event_handler(uint16_t event, void* param);
+static void avrc_controller_event_handler(uint16_t event, void* rawParam);
 static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn_param_t *params);
 static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t event_to_register_for, uint8_t transactionLabel, uint32_t eventParameter);
 
@@ -76,18 +76,18 @@ void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
     }
 }
 
-static void avrc_controller_event_handler(uint16_t event, void* param) {
-    esp_avrc_ct_cb_param_t* callbackParams = (esp_avrc_ct_cb_param_t *) param;
+static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
+    esp_avrc_ct_cb_param_t* params = (esp_avrc_ct_cb_param_t *) rawParam;
     switch (event) {
         case ESP_AVRC_CT_CONNECTION_STATE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
             char bdaStr[18];
             ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CONNECTION_STATE_EVT %s remote [%s]",
-                    callbackParams->conn_stat.connected ? "connected to" : "disconnected from", get_bda_string(callbackParams->conn_stat.remote_bda, bdaStr));
+                    params->conn_stat.connected ? "connected to" : "disconnected from", get_bda_string(params->conn_stat.remote_bda, bdaStr));
 #endif
             // When connected, retrieve remote AVRC TG supported notification events so we can subscribe to notifications (play, pause ...)
             s_avrc_peer_notifications_capabilities.bits = 0;
-            if (callbackParams->conn_stat.connected) {
+            if (params->conn_stat.connected) {
                 if (esp_avrc_ct_send_get_rn_capabilities_cmd(CommandGetCapabilitiesTransactionLabel) != ESP_OK) {
                     ESP_LOGE(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CONNECTION_STATE_EVT failed in esp_avrc_ct_send_get_rn_capabilities_cmd()");
                 }
@@ -97,13 +97,13 @@ static void avrc_controller_event_handler(uint16_t event, void* param) {
 
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG            
-            uint8_t attributeId = callbackParams->meta_rsp.attr_id;
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%x): '%s'", get_avrc_metdata_attribute_name(attributeId), attributeId , callbackParams->meta_rsp.attr_text);
+            uint8_t attributeId = params->meta_rsp.attr_id;
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%x): '%s'", get_avrc_metdata_attribute_name(attributeId), attributeId , params->meta_rsp.attr_text);
 #endif
-            if (callbackParams->meta_rsp.attr_text != NULL) {
+            if (params->meta_rsp.attr_text != NULL) {
                 // Free memory we allocated for the metadata string
-                free(callbackParams->meta_rsp.attr_text);
-                callbackParams->meta_rsp.attr_text = NULL;
+                free(params->meta_rsp.attr_text);
+                params->meta_rsp.attr_text = NULL;
             }
         }
         break;
@@ -117,9 +117,9 @@ static void avrc_controller_event_handler(uint16_t event, void* param) {
 
        case ESP_AVRC_CT_CHANGE_NOTIFY_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> %s (0x%x)", get_avrc_notification_name(callbackParams->change_ntf.event_id), callbackParams->change_ntf.event_id);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> %s (0x%x)", get_avrc_notification_name(params->change_ntf.event_id), params->change_ntf.event_id);
 #endif
-            if (handle_controller_notification_event(callbackParams->change_ntf.event_id, &callbackParams->change_ntf.event_parameter) != ESP_OK) {
+            if (handle_controller_notification_event(params->change_ntf.event_id, &params->change_ntf.event_parameter) != ESP_OK) {
                 ESP_LOGE(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT failed in handle_controller_notification_event()");
             }
         }
@@ -127,20 +127,20 @@ static void avrc_controller_event_handler(uint16_t event, void* param) {
 
         case ESP_AVRC_CT_REMOTE_FEATURES_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT feature bit mask: 0x%"PRIx32", TG features: 0x%"PRIx16, callbackParams->rmt_feats.feat_mask, callbackParams->rmt_feats.tg_feat_flag);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT feature bit mask: 0x%"PRIx32", TG features: 0x%"PRIx16, params->rmt_feats.feat_mask, params->rmt_feats.tg_feat_flag);
             
             // Features
             char* featuresStr[6];
-            get_avrc_feature_names(callbackParams->rmt_feats.feat_mask, featuresStr);
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT rmt_feats.feat_mask (0x%"PRIx32")", callbackParams->rmt_feats.feat_mask);
+            get_avrc_feature_names(params->rmt_feats.feat_mask, featuresStr);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT rmt_feats.feat_mask (0x%"PRIx32")", params->rmt_feats.feat_mask);
             for (uint8_t index = 0; (featuresStr[index] != NULL) && (index < 6); index++) {
                 ESP_LOGI(BtAvrcControllerTag, "[CT]\t%s", featuresStr[index]);
             }
 
             // CT Flags
             char* featureFlagsStr[8];
-            get_avrc_feature_flags(callbackParams->rmt_feats.tg_feat_flag, featureFlagsStr);
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT rmt_feats.tg_feat_flag (0x%"PRIx16")", callbackParams->rmt_feats.tg_feat_flag);
+            get_avrc_feature_flags(params->rmt_feats.tg_feat_flag, featureFlagsStr);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT rmt_feats.tg_feat_flag (0x%"PRIx16")", params->rmt_feats.tg_feat_flag);
             for (uint8_t index = 0; (featureFlagsStr[index] != NULL) && (index < 8); index++) {
                 ESP_LOGI(BtAvrcControllerTag, "[CT]\t%s", featureFlagsStr[index]);
             }
@@ -150,10 +150,10 @@ static void avrc_controller_event_handler(uint16_t event, void* param) {
 
         case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT remote rn_cap: count %d, bitmask 0x%x", callbackParams->get_rn_caps_rsp.cap_count, callbackParams->get_rn_caps_rsp.evt_set.bits);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT remote rn_cap: count %d, bitmask 0x%x", params->get_rn_caps_rsp.cap_count, params->get_rn_caps_rsp.evt_set.bits);
 #endif
             // Capture remote controller capabilities - We will need them when a notification is received and we need to re-attach the event notification
-            s_avrc_peer_notifications_capabilities.bits = callbackParams->get_rn_caps_rsp.evt_set.bits;
+            s_avrc_peer_notifications_capabilities.bits = params->get_rn_caps_rsp.evt_set.bits;
             
             // We now have the remote controller capabilities. Register for notifications we need and are supported
             register_for_notification(ESP_AVRC_RN_TRACK_CHANGE, NotificationTrackChangeTransactionLabel, 0);
@@ -164,7 +164,7 @@ static void avrc_controller_event_handler(uint16_t event, void* param) {
 
         case ESP_AVRC_CT_SET_ABSOLUTE_VOLUME_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            uint8_t volumeAvrc = callbackParams->set_volume_rsp.volume;
+            uint8_t volumeAvrc = params->set_volume_rsp.volume;
             uint16_t volumePercent = AVRC_VOLUME_TO_PERCENT(volumeAvrc);
             ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_SET_ABSOLUTE_VOLUME_RSP_EVT volume: %d (%d%%)", volumeAvrc, volumePercent);
 #endif
