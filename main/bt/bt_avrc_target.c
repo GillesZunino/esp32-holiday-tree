@@ -84,16 +84,9 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
 #endif
             switch (eventId) {
                 case ESP_AVRC_RN_VOLUME_CHANGE: {
-                    uint8_t volumeAvrc;
-                    get_volume_avrc(&volumeAvrc);
-               
-                    // Respond to the controller with the current AVRC volume
-                    esp_avrc_rn_param_t rnParam = {
-                        .volume = volumeAvrc
-                    };
-
-                    // Response with 'INTERIM' as opposed to 'CHANGED' - See paragragh 292.9 of AVRC 1.6.1 specification 
-                    esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM, &rnParam);
+                    // Respond to the controller with 'INTERIM' - See paragragh 29.19 of AVRC 1.6.1 specification ...
+                    esp_avrc_rn_param_t rnParam = { .volume = get_volume_avrc() };
+                    esp_err_t err = esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM, &rnParam);
                 }
                 break;
 
