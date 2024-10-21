@@ -14,6 +14,8 @@ set(srcs
 
         "bt/i2s_output.c"
 
+        "bt/bt_connection_settings.c"
+
         "leds/led_init.c"
         "leds/led_internals.c"
         "leds/led_animator.c"
