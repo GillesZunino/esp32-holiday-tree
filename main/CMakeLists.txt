@@ -27,5 +27,5 @@ set(srcs
 idf_component_register(
         SRCS "${srcs}"
         INCLUDE_DIRS "."
-        PRIV_REQUIRES nvs_flash esp_driver_gpio bt esp_driver_i2s esp_ringbuf
+        PRIV_REQUIRES esp_driver_gpio esp_driver_i2s esp_ringbuf nvs_flash bt
 )
