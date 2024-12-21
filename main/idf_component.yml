@@ -4,4 +4,4 @@
 
 dependencies:
   # https://components.espressif.com/components/espressif/led_strip
-  espressif/led_strip: "2.5.5"
+  espressif/led_strip: "3.0.0"

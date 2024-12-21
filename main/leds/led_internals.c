@@ -35,9 +35,18 @@ esp_err_t create_led_string(gpio_num_t dataPin, gpio_num_t onOffPin, uint32_t le
         const led_strip_config_t ledStringConfig = {
             .strip_gpio_num = dataPin,
             .max_leds = ledCount,
-            .led_pixel_format = LED_PIXEL_FORMAT_GRB,
             .led_model = LED_MODEL_WS2812,
-            .flags.invert_out = false
+            .color_component_format= {
+                .format = {
+                    .r_pos = 1, // R is in second position
+                    .g_pos = 0, // G is in first position
+                    .b_pos = 2, // B is in third position
+                    .num_components = 3
+                }
+            },
+            .flags = {
+                .invert_out = false
+            }
         };
 
         const led_strip_spi_config_t spiConfig = {
