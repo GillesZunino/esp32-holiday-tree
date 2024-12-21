@@ -20,7 +20,7 @@ static const char* NvsLogTag = "nvs_ops";
 static const char* const BTDevicesPreferences = "bt_devices";
 
 // Length of the NVS key for a Bluetooth device preferences, including the null-terminator
-static const uint8_t PreferenceKeyLength = 17 + 1;
+static const uint8_t PreferenceKeyLength = 12 + 1;
 
 
 static void bda_to_nvs_key(const esp_bd_addr_t bda, char key[PreferenceKeyLength]);
@@ -72,5 +72,5 @@ esp_err_t set_bt_device_preferences(const esp_bd_addr_t bda, const bt_device_pre
 }
 
 static void bda_to_nvs_key(const esp_bd_addr_t bda, char key[PreferenceKeyLength]) {
-    sprintf(key, "%02x:%02x:%02x:%02x:%02x:%02x", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+    sprintf(key, "%02x%02x%02x%02x%02x%02x", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 }
