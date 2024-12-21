@@ -17,11 +17,7 @@
   "idf.toolsPath": "/Users/gzunino/Documents/Espressif/v5.3.2/tools",
 
   "idf.customExtraVars": {
-    "IDF_CCACHE_ENABLE": "1",
-    "ESP_ROM_ELF_DIR": "D:\\espressif\\v5.3.2\\tools\\tools\\esp-rom-elfs\\20240305/"
   },
-
-  "idf.adapterTargetName": "esp32",
 
   "idf.openOcdDebugLevel": 2,
   "idf.openOcdConfigs": [
@@ -46,8 +42,5 @@
   "idf.flashType": "JTAG",
 
   "idf.portWin": "COM6",
-  "idf.port": "/dev/tty.usbmodem1411101",
-
-  "files.associations": {
-  }
+  "idf.port": "/dev/tty.usbmodem1411101"
 }
