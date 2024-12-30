@@ -27,15 +27,16 @@ static const gpio_num_t I2sDataPin = GPIO_NUM_25;
 static const gpio_num_t I2sBckPin = GPIO_NUM_26;
 static const gpio_num_t I2sLrckPin = GPIO_NUM_27;
 
-// Ring buffer size - 32K is plenty as A2DP seems to be handing off data 4K bytes at a time from a2d_event_callback()
-static const size_t RingBufferMaximumSizeInBytes = 32 * 1024;
 
-
-// Number of bytes received from the A2DP callback (per call))
+// Number of audio bytes received from the A2DP callback (per call)
 static const size_t A2DPBatchSizeInBytes = 4096; // 4K bytes
 
-// Number of bytes to prefetch before releasing I2S write task
-static const size_t MinimumPrefetchBufferSizeInBytes = 16 * 1024; // 16K bytes
+// Ring buffer size - Expressed as a multiple of the batch size (A2DPBatchSizeInBytes)
+static const size_t RingBufferMaximumSizeInBytes = 8 * A2DPBatchSizeInBytes;
+
+// Number of bytes to prefetch before sending data to the I2S output - Expressed as a multiple of the batch size (A2DPBatchSizeInBytes)
+static const size_t MinimumPrefetchBufferSizeInBytes = 2 * A2DPBatchSizeInBytes;
+
 
 // I2S task notification indices
 static const UBaseType_t I2STaskNotificationIndex = 0;
@@ -154,8 +155,8 @@ static esp_err_t create_i2s_channel() {
         .role = I2S_ROLE_MASTER,
         .dma_desc_num = dmaDescNum,     // 6 Buffers = 6 DMA descriptors
         .dma_frame_num = dmaFrameNum,   // 240 Frames (aka samples)
-        .auto_clear = true,             // Clear DMA TX buffer to send 0 automatically if no data to send - Otherwise the last data is sent creatig an effect of "repeating sample"
-        .intr_priority = 0              // Priority level - When 0, the driver allocates an interupr with "low" priority (1,2,3)
+        .auto_clear = true,             // Clear DMA TX buffer to send 0 automatically if no data to send - Otherwise the last data is sent creating an effect of "repeating sample"
+        .intr_priority = 0              // Priority level - When 0, the driver allocates an interrupt with "low" priority (1,2,3)
     };
 
     // Standard configuration for I2S - Assume 44.1kHz - Frequency, sample size and number of channels can be changed without deleting the channel
