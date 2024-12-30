@@ -74,7 +74,7 @@ static esp_err_t stop_i2s_output_task();
 
 static void i2s_task_handler(void* arg);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static void log_ringbuffer_incoming_stats(uint32_t size);
 #endif
 
@@ -272,7 +272,7 @@ esp_err_t set_i2s_output_audio_state(esp_a2d_audio_state_t audioState) {
 }
 
 uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
     log_ringbuffer_incoming_stats(size);
 #endif
 
@@ -304,7 +304,7 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
     return 0;
 }
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 
 static void log_ringbuffer_incoming_stats(uint32_t size) {
     static uint64_t numberOfCalls = 0;
@@ -331,7 +331,7 @@ static void i2s_task_handler(void* arg) {
         TickType_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? 2 : portMAX_DELAY;
         i2s_writer_notification_t notification = accept_i2s_task_notification_with_delay(notificationDelay);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
     if (notification != I2sWriterNotificationNone) {
         ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - Received notification '%s'", get_ringbuffer_mode_name(currentMode), get_i2s_task_notificationType(notification));
     }
@@ -345,7 +345,7 @@ static void i2s_task_handler(void* arg) {
                 switch (currentMode) {
                     case RingbufferNone:
                     case RingbufferPaused: {
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
                         ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - New mode 'RingbufferPrefetching'", get_ringbuffer_mode_name(currentMode));
 #endif
                         currentMode = RingbufferPrefetching;
@@ -382,7 +382,7 @@ static void i2s_task_handler(void* arg) {
                             esp_err_t err = take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer, DrainWaitTimeInTicks, &takenFromBufferInBytes);
                             switch (err) {
                                 case ESP_OK:
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
                                     ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] - Drained %u bytes",  takenFromBufferInBytes);
 #endif
                                 break;
@@ -400,7 +400,7 @@ static void i2s_task_handler(void* arg) {
                             }
                         } while (shouldWrite);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
                         ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - New mode 'RingbufferPaused'", get_ringbuffer_mode_name(currentMode));
 #endif
                         currentMode = RingbufferPaused;
@@ -424,7 +424,7 @@ static void i2s_task_handler(void* arg) {
             size_t bytesWaitingToBeRetrieved = 0;
             vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
             int32_t remainToBuffer = MinimumPrefetchBufferSizeInBytes - bytesWaitingToBeRetrieved;
             float percentFetched = (100 * bytesWaitingToBeRetrieved) / MinimumPrefetchBufferSizeInBytes;
             ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferPrefetching] In buffer %u - Needs %ld - Buffered %f%%", bytesWaitingToBeRetrieved, remainToBuffer, percentFetched);
@@ -433,7 +433,7 @@ static void i2s_task_handler(void* arg) {
             if (bytesWaitingToBeRetrieved >= MinimumPrefetchBufferSizeInBytes) {
                 currentMode = RingbufferWriting;
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
                 ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferPrefetching] Mode changed to 'RingbufferWriting'");
 #endif
             } else {
@@ -445,7 +445,7 @@ static void i2s_task_handler(void* arg) {
 
         // If we are writing to I2S, consume from ring buffer
         if (currentMode == RingbufferWriting) {
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
             static uint64_t numberOfCalls = 0;
             numberOfCalls++;
 
@@ -465,7 +465,7 @@ static void i2s_task_handler(void* arg) {
             if (err != ESP_OK) {
                 switch (err) {
                     case ESP_ERR_TIMEOUT: {
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
                         UBaseType_t bytesWaitingToBeRetrieved = 0;
                         vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
                         if (bytesWaitingToBeRetrieved > 0) {
