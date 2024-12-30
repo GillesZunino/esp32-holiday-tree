@@ -69,7 +69,7 @@ menu "Holiday Tree"
         bool "Log Bluetooth AVR Target processing"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
         help
-            Emit detailed logging about Bluetooth AVR Taget processing
+            Emit detailed logging about Bluetooth AVR Target processing
             
     config  HOLIDAYTREE_I2S_OUTPUT_LOG
         bool "Log I2S processing"
