@@ -27,7 +27,7 @@
 
 
 //
-// We assign different GPIO pins to various peripherials in development versus production:
+// We assign different GPIO pins to various peripherals in development versus production:
 //  * [Real Device]
 //      * Momentary button on IO15 which is also JTAG TDO and a strapping pin
 //      * WS2812 LED data on IO5 which is also a strapping pin
@@ -39,18 +39,18 @@
     // Momentary button GPIO
     const gpio_num_t ButtonGPIONum = GPIO_NUM_15;
 
-    // Individually adressable LEDs data GPIO
+    // Individually addressable LEDs data GPIO
     const gpio_num_t LedDataGPIONum = GPIO_NUM_5;
 #else
     // Momentary button GPIO
     const gpio_num_t ButtonGPIONum = GPIO_NUM_23;
 
-    // Individually adressable LEDs data GPIO
+    // Individually addressable LEDs data GPIO
     const gpio_num_t LedDataGPIONum = GPIO_NUM_22;
 #endif
 
 
-// Individually adressable LEDs on/off switch GPIO
+// Individually addressable LEDs on/off switch GPIO
 const gpio_num_t LedSwitchGPIONum = GPIO_NUM_4;
 
 // Main application log tag
@@ -58,8 +58,8 @@ static const char* MainTag = "app_main";
 
 
 
-static void on_momentatory_button_pressed(void) {
-    ESP_LOGI(MainTag, "on_momentatory_button_pressed() Button pressed");
+static void on_momentary_button_pressed(void) {
+    ESP_LOGI(MainTag, "on_momentary_button_pressed() Button pressed");
     // Currently no action
 }
 
@@ -83,12 +83,12 @@ void app_main(void) {
     ESP_ERROR_CHECK(configure_bluetooth());
 
     // Configure tree momentary button
-    ESP_ERROR_CHECK(configure_momentary_button(ButtonGPIONum, &on_momentatory_button_pressed));
+    ESP_ERROR_CHECK(configure_momentary_button(ButtonGPIONum, &on_momentary_button_pressed));
 
     // Configure tree lights
     ESP_ERROR_CHECK(configure_led_string(LedDataGPIONum, LedSwitchGPIONum));
     ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
 
     // Dispatch GPIO events - This function blocks with portMAX_DELAY as timeout and never returns
-    gpio_events_queue_dispatch();
+    ESP_ERROR_CHECK(gpio_events_queue_dispatch());
 }
