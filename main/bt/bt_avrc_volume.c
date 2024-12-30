@@ -14,7 +14,7 @@
 
 // -----------------------------------------------------------------------------------
 // There are many ways to calculate the multiplier factor applied to all sound samples
-// CHoose between:
+// Choose between:
 //  * Linear:               get_linear_volume(volumeAvrc)
 //  * Simple Exponential:   get_exponential_volume(volumeAvrc)
 

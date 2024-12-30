@@ -23,8 +23,8 @@
 #define A2D_SBC_IE_BLOCKS_MSK       0xF0    // b7-b4 number of blocks
 #define A2D_SBC_IE_BLOCKS_4         0x80    // 4 blocks
 #define A2D_SBC_IE_BLOCKS_8         0x40    // 8 blocks
-#define A2D_SBC_IE_BLOCKS_12        0x20    // 12blocks
-#define A2D_SBC_IE_BLOCKS_16        0x10    // 16blocks
+#define A2D_SBC_IE_BLOCKS_12        0x20    // 12 blocks
+#define A2D_SBC_IE_BLOCKS_16        0x10    // 16 blocks
 
 // SBC sub bands
 #define A2D_SBC_IE_SUBBAND_MSK      0x0C    // b3-b2 number of subbands
@@ -34,4 +34,4 @@
 // SBC allocation mode
 #define A2D_SBC_IE_ALLOC_MD_MSK     0x03    // b1-b0 allocation mode
 #define A2D_SBC_IE_ALLOC_MD_S       0x02    // b1: SNR
-#define A2D_SBC_IE_ALLOC_MD_L       0x01    // b0: loundess
+#define A2D_SBC_IE_ALLOC_MD_L       0x01    // b0: loudness

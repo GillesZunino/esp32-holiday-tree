@@ -42,7 +42,7 @@ static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t event_to_regi
 void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t* param) {
     switch (event) {
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
-            // Copy metadata strings before enqueing the event
+            // Copy metadata strings before enqueuing the event
             uint8_t* attrText = (uint8_t *) malloc(param->meta_rsp.attr_length + 1);
             if (attrText != NULL) {
                 memcpy(attrText, param->meta_rsp.attr_text, param->meta_rsp.attr_length);
