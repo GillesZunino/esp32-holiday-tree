@@ -50,5 +50,31 @@
       "postBuild": "",
       "postFlash": ""
     }
+  },
+  "smartbutton": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "${workspaceFolder}/build-smartbutton",
+      "sdkconfigDefaults": [
+        "sdkconfig.defaults",
+        "sdkconfig.smartbutton"
+      ],
+      "sdkconfigFilePath": "${workspaceFolder}/build-smartbutton/sdkconfig"
+    },
+    "env": {},
+    "flashBaudRate": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": 0,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
   }
 }
