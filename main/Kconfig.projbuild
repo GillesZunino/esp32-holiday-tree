@@ -77,7 +77,7 @@ menu "Holiday Tree"
         help
             Emit detailed logging about I2S processing
 
-    config  HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+    config  HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
         bool "Log I2S data processing"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
         help
