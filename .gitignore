@@ -11,7 +11,7 @@ esp-idf-vscode-generated.gdb
 
 # ESP-IDF build intermediates and output
 **/managed_components/**
-**/build/**
+**/build*/**
 **/dist/**
 
 # ESP-IDF unit test
