@@ -24,34 +24,34 @@ led_animation_task_notification_t progressive_reveal_led_effect() {
         // All Off
         clear_led_string();
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Center LED On - white
         set_led_string_pixel(CENTER_LED_INDEX, 255, 255, 255);
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Right 1 LED on - Red
         set_led_string_pixel(RIGHT_LED1_INDEX, 255, 0, 0);
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Right 2 LED on - Red
         set_led_string_pixel(RIGHT_LED2_INDEX, 255, 0, 0);
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Left 1 LED on - Green
         set_led_string_pixel(LEFT_LED1_INDEX, 0, 255, 0);
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Left 2 LED on - Green
         set_led_string_pixel(LEFT_LED2_INDEX, 0, 255, 0);
         refresh_led_string();
-        WAIT_OR_END_EFECT(TimePerFrameMs);
+        WAIT_OR_END_EFFECT(TimePerFrameMs);
 
         // Hold the fully lit step before cycling
-        //WAIT_OR_END_EFECT(TimePerFrameMs);
+        //WAIT_OR_END_EFFECT(TimePerFrameMs);
     }
 }

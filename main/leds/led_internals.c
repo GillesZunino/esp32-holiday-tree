@@ -14,7 +14,7 @@ const char* LedStringTag = "led_string";
 // LEDs string on / off switch pin
 static gpio_num_t s_leds_string_on_off_gpio = GPIO_NUM_NC;
 
-// String of individually adressable LEDs
+// String of individually addressable LEDs
 static led_strip_handle_t s_led_string_handle = NULL;
 
 

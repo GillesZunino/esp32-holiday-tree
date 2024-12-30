@@ -18,7 +18,7 @@ extern const UBaseType_t LedAnimationTaskNotificationIndex;
 
 led_animation_task_notification_t accept_task_notification_with_delay(uint32_t delayMs);
 
-#define WAIT_OR_END_EFECT(delayMs) do { \
+#define WAIT_OR_END_EFFECT(delayMs) do { \
         led_animation_task_notification_t _notification = accept_task_notification_with_delay( ( delayMs ) ); \
         if (_notification != LedAnimationTaskNotificationNone) return _notification; \
     } while(0)

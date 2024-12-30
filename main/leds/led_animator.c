@@ -107,7 +107,7 @@ static void animate_led_task(void* arg) {
     for (;;) {
         switch (notification) {
             case LedAnimationTaskNotificationPause:
-                // Wait (portMAX_DELAY = infinite timeout) to be awaken up to animate LEDs
+                // Wait (portMAX_DELAY = infinite timeout) to be woken up to animate LEDs
                 notification = accept_task_notification_with_delay(portMAX_DELAY);
 #if CONFIG_HOLIDAYTREE_LEDS_LOG
                 ESP_LOGI(LedStringTag, "animate_led_task() received notification '%s' (%d)", get_led_task_notification_name(notification), notification);

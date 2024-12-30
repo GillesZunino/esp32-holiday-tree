@@ -27,7 +27,7 @@ static const uint16_t ApplicationDelayInOneOverTenMs = 5 * 10; // 50 * 1/10 ms =
 static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* params);
 static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static void log_icoming_a2d_data_stats(uint32_t len);
 static void reset_incoming_a2d_data_stats(const esp_a2d_cb_param_t* const params);
 #endif
@@ -66,12 +66,12 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len) {
         ESP_LOGW(BtA2dTag, "a2d_data_sink_callback() failed to write to I2S ring buffer. Expected size: 0x%"PRIu32", Written size: 0x%"PRIu32, len, byteWritten);
     }
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
     log_icoming_a2d_data_stats(len);
 #endif
 }
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 
 // Keep track of the number of audio packets received - Only in development
 static uint32_t s_audio_packets_count = 0;
@@ -167,7 +167,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
                 ESP_LOGE(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %d", get_a2d_audio_state_name(params->audio_stat.state), err);
             }
 
-#if CONFIG_HOLIDAYTREE_DETAILLED_I2S_DATA_PROCESSING_LOG
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
             reset_incoming_a2d_data_stats(params);
 #endif
         }
