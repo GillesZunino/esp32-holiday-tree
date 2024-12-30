@@ -24,7 +24,7 @@ esp_err_t gpio_events_queue_dispatch(void) {
             if (handlerFn != NULL) {
                 handlerFn();
             } else {
-                ESP_LOGE(GpioIsrTag, "xQueueReceive() retrieved and ISR request with NULL handler");
+                ESP_LOGE(GpioIsrTag, "xQueueReceive() retrieved an ISR request with NULL handler");
             }
         } else {
             ESP_LOGE(GpioIsrTag, "xQueueReceive() failed (0x%x) - ISR will be dropped", dequeueOutcome);
@@ -35,9 +35,9 @@ esp_err_t gpio_events_queue_dispatch(void) {
 
 static void gpio_isr_handler(void* arg) {
     isr_handler_fn_ptr handlerFn = (isr_handler_fn_ptr) arg;
-    BaseType_t enqueuOutcome = xQueueGenericSendFromISR(s_gpio_isr_dispatch_queue, &handlerFn, NULL, queueSEND_TO_BACK);
-    if (enqueuOutcome != pdPASS) {
-        ESP_DRAM_LOGE(GpioIsrTag, "xQueueGenericSendFromISR() failed (0x%x) - ISR will be dropped", enqueuOutcome);
+    BaseType_t enqueueOutcome = xQueueGenericSendFromISR(s_gpio_isr_dispatch_queue, &handlerFn, NULL, queueSEND_TO_BACK);
+    if (enqueueOutcome != pdPASS) {
+        ESP_DRAM_LOGE(GpioIsrTag, "xQueueGenericSendFromISR() failed (0x%x) - ISR will be dropped", enqueueOutcome);
     }
 }
 
@@ -77,7 +77,7 @@ esp_err_t configure_gpio_isr_dispatcher(void) {
     // * CONFIG_ESP_IPC_TASK_STACK_SIZE       - Default 1024 - Raised to 1280 (0x500) to avoid stack overflow in ipc0 (see sdkconfig.defaults)
     //
     const int ESP_INTR_FLAG_NONE = 0;
-    esp_err_t err =  gpio_install_isr_service(ESP_INTR_FLAG_NONE);
+    esp_err_t err = gpio_install_isr_service(ESP_INTR_FLAG_NONE);
     if (err != ESP_OK) {
         if (shutdown_gpio_isr_queue() != ESP_OK) {
             ESP_LOGE(GpioIsrTag, "gpio_install_isr_service() failed and cleanup action shutdown_gpio_isr_queue() failed (0x%x)", err);
