@@ -12,6 +12,9 @@
 #include <esp_check.h>
 #include <esp_log.h>
 
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+#include <esp_timer.h>
+#endif
 
 #include "bt/bt_avrc_volume.h"
 #include "bt/i2s_output.h"
@@ -76,6 +79,7 @@ static void i2s_task_handler(void* arg);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static void log_ringbuffer_incoming_stats(uint32_t size);
+static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTime);
 #endif
 
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer);
@@ -274,35 +278,39 @@ esp_err_t set_i2s_output_audio_state(esp_a2d_audio_state_t audioState) {
 uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
     log_ringbuffer_incoming_stats(size);
+    uint64_t startEspTime = esp_timer_get_time();
 #endif
 
-    const uint8_t MaxTries = 5;
-    const TickType_t WriteWaitTimeInTicks = 5;
-    const TickType_t WaitTimeInTicks = 2;
+    // --------------------------------------------------------------------------------------------
+    // xRingbufferSend() on ESP32 was measured as follows (for a buffer of 4096 bytes of data):
+    //  - Average time:   26 us
+    //  - Minimum time:   23 us
+    //  - Maximum time: 8363 us
+    //
+    // With the default FReeRTOS configuration (configTICK_RATE_HZ = 100Hz):
+    //  - Anything below1 000 us is less than 1 FreeRTOS tick
+    //
+    // We choose `WriteWaitTimeInTicks` below as 10 times the maximum xRingbufferSend() time
+    // --------------------------------------------------------------------------------------------
+    const TickType_t WriteWaitTimeInTicks = pdMS_TO_TICKS(10 * 1);
+    BaseType_t ringBufferSendOutcome = xRingbufferSend(s_i2s_ringbuffer, (void *)data, size, WriteWaitTimeInTicks);
 
-    bool shouldTry = true;
-    uint8_t tries = 0;
-    do {
-        BaseType_t ringBufferSendOutcome = xRingbufferSend(s_i2s_ringbuffer, (void *)data, size, WriteWaitTimeInTicks);
-        if (ringBufferSendOutcome == pdTRUE) {
-            return size;
-        }
-        else {
-            tries++;
-            shouldTry = tries <= MaxTries;
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+        uint64_t endEspTime = esp_timer_get_time();
+#endif
 
-            ESP_LOGW(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out / Failed to write to ring buffer - %s (%d)", shouldTry ? "RETRY" : "NO RETRY", tries);
-
-            if (shouldTry) {
-                vTaskDelay(WaitTimeInTicks);
-            }
-        }
-    } while (shouldTry);
-
-    ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out trying to write to ring buffer or ring buffer overflow - Dropped %lu bytes", size);
-
-    return 0;
+    if (ringBufferSendOutcome == pdTRUE) {
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+        log_ringbuffer_write_stats(startEspTime, endEspTime);
+#endif
+        return size;
+    }
+    else {
+        ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out trying to write to ring buffer or ring buffer overflow - Dropped %lu bytes", size);
+        return 0;
+    }
 }
+
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 
@@ -322,7 +330,36 @@ static void log_ringbuffer_incoming_stats(uint32_t size) {
     }
 }
 
+static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTime) {
+    // Total number of calls
+    static uint64_t numberOfCalls = 0;
+    numberOfCalls++;
+
+    // Current call time in us
+    uint64_t thisCallTime = endEspTime - startEspTime;
+
+    // Total call duration across all calls
+    static uint64_t totallCallTime = 0;
+    totallCallTime += thisCallTime;
+
+    // Minimum and maximum
+    static uint64_t minTimePerCall = UINT64_MAX;
+    static uint64_t maxTimePerCall = 0;
+
+    minTimePerCall = minTimePerCall > thisCallTime ? thisCallTime : minTimePerCall;
+    maxTimePerCall = maxTimePerCall < thisCallTime ? thisCallTime : maxTimePerCall;
+
+    if (numberOfCalls % 100 == 0) {
+        // Current call time in FreeRTOS ticks and average time per call
+        uint32_t thisCallTimeTicks = pdMS_TO_TICKS(thisCallTime / 1000);
+        uint64_t averageTimePerCall = totallCallTime / numberOfCalls;
+
+        ESP_LOGI(BtI2sOutputTag, "write_to_i2s_output() xRingBufferSend() time -> This call: %llu us (%lu Ticks) - Average: %llu us - Min: %llu us - Max: %llu us", thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
+    }
+}
+
 #endif
+
 
 static void i2s_task_handler(void* arg) {
     ringbuffer_mode_t currentMode = RingbufferNone;
