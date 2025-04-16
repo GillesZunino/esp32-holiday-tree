@@ -17,6 +17,7 @@
   "idf.toolsPath": "/Users/gzunino/Documents/Espressif/v5.3.2/tools",
 
   "idf.customExtraVars": {
+    "IDF_TARGET": "esp32"
   },
 
   "idf.openOcdDebugLevel": 2,
@@ -39,7 +40,7 @@
   "idf.enableSizeTaskAfterBuildTask": true,
 
   // SVD files from https://github.com/espressif/svd/tree/main/svd
-  "idf.svdFilePath": "${workspaceFolder}/svd/esp32.svd",
+  "idf.svdFilePath": "${workspaceFolder}/svd/${env:IDF_TARGET}.svd",
 
   "idf.flashType": "JTAG",
 
