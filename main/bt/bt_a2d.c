@@ -264,7 +264,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
         case ESP_A2D_SNK_SET_DELAY_VALUE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             if (params->a2d_set_delay_value_stat.set_state == ESP_A2D_SET_SUCCESS) {
-                ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT delay value %u (in 1/10 ms), %u", params->a2d_set_delay_value_stat.delay_value, params->a2d_set_delay_value_stat.delay_value / 10);
+                ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT delay value %u (in 1/10 ms) -> %u ms", params->a2d_set_delay_value_stat.delay_value, params->a2d_set_delay_value_stat.delay_value / 10);
             } else {
                 ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT failed");
             }
@@ -274,7 +274,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 
         case ESP_A2D_SNK_GET_DELAY_VALUE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_GET_DELAY_VALUE_EVT delay value %u (in 1/10 ms), %u", params->a2d_get_delay_value_stat.delay_value, params->a2d_get_delay_value_stat.delay_value / 10);
+            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_GET_DELAY_VALUE_EVT delay value %u (in 1/10 ms) -> %u ms", params->a2d_get_delay_value_stat.delay_value, params->a2d_get_delay_value_stat.delay_value / 10);
 #endif
             esp_err_t err = esp_a2d_sink_set_delay_value(params->a2d_get_delay_value_stat.delay_value + ApplicationDelayInOneOverTenMs);
             if (err != ESP_OK) {
