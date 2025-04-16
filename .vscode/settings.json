@@ -8,8 +8,8 @@
   "idf.showOnboardingOnInit": false,
 
   // Windows specific ESP IDF paths and tools
-  "idf.espIdfPathWin": "D:\\espressif\\v5.3.2\\esp-idf",
-  "idf.toolsPathWin": "D:\\espressif\\v5.3.2\\tools",
+  "idf.espIdfPathWin": "D:\\espressif\\v5.4.1\\esp-idf",
+  "idf.toolsPathWin": "D:\\espressif\\v5.4.1\\tools",
 
   // Linux / MacOS specific ESP IDF paths and tools
   // NOTE: For Espressif Docker images, comment out the following two lines to accept the ambient image configuration
