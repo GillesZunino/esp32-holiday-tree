@@ -287,8 +287,8 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
     //  - Minimum time:   23 us
     //  - Maximum time: 8363 us
     //
-    // With the default FReeRTOS configuration (configTICK_RATE_HZ = 100Hz):
-    //  - Anything below1 000 us is less than 1 FreeRTOS tick
+    // With the default FreeRTOS configuration (configTICK_RATE_HZ = 100Hz):
+    //  - Anything below 1000 us is less than 1 FreeRTOS tick
     //
     // We choose `WriteWaitTimeInTicks` below as 10 times the maximum xRingbufferSend() time
     // --------------------------------------------------------------------------------------------
