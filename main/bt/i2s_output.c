@@ -2,6 +2,8 @@
 // Copyright 2024, Gilles Zunino
 // -----------------------------------------------------------------------------------
 
+#include <stdatomic.h>
+
 #include <string.h>
 #include <math.h>
 
@@ -41,23 +43,23 @@ static const size_t RingBufferMaximumSizeInBytes = 8 * A2DPBatchSizeInBytes;
 static const size_t MinimumPrefetchBufferSizeInBytes = 2 * A2DPBatchSizeInBytes;
 
 
-// I2S task notification indices
+// I2S task notification index and value
 static const UBaseType_t I2STaskNotificationIndex = 0;
+static const uint32_t I2STaskNotificationValue = ULONG_MAX;
 
 
-// I2S task notification values
+// A2DP Audio state
 typedef enum {
-    I2sWriterNotificationNone = -1,
-    I2sWriterNotificationAudioActive = 1,
-    I2sWriterNotificationAudioPaused = 2
-} i2s_writer_notification_t;
+    A2DPAudioStateNone = -1,
+    A2DPAudioStateActive = 1,
+    A2DPAudioStatePaused = 2
+} a2dp_audio_state_t;
 
 // Ring buffer mode of operation
 typedef enum {
     RingbufferNone = 0,
-    RingbufferPaused = 1,       // Audio paused
-    RingbufferPrefetching = 2,  // Buffering incoming audio data - I2S is waiting
-    RingbufferWriting = 3       // Buffering incoming audio data - I2S output writing to DMA
+    RingbufferPrefetching = 1,  // Buffering incoming audio data - I2S is waiting
+    RingbufferWriting = 2,      // Buffering incoming audio data - Data sent to I2S output via DMA 
 } ringbuffer_mode_t;
 
 
@@ -67,6 +69,8 @@ static RingbufHandle_t s_i2s_ringbuffer = NULL;
 
 static uint8_t s_bytes_per_sample_per_channel = 0;
 static size_t s_bytes_to_take_from_ringbuffer = 0;
+
+static volatile atomic_uint_fast8_t s_atomic_current_audio_state = A2DPAudioStateNone;
 
 
 static esp_err_t create_i2s_channel();
@@ -79,21 +83,23 @@ static void i2s_task_handler(void* arg);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static void log_ringbuffer_incoming_stats(uint32_t size);
-static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTime);
+static void log_ringbuffer_outgoing_stats(BaseType_t bytesWaitingToBeRetrieved, ringbuffer_mode_t ringbufferMode);
+static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEspTime, const char* const operationName);
 #endif
 
-static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer);
+static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, size_t* pBytesTakenFromBuffer);
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample);
-
-static i2s_writer_notification_t accept_i2s_task_notification_with_delay(TickType_t delayTicks);
+static void drain_ringbuffer();
 
 static esp_err_t notify_a2dp_audio_active();
 static esp_err_t notify_a2dp_audio_paused();
-static esp_err_t notify_i2s_task(i2s_writer_notification_t notificationType);
+static esp_err_t notify_i2s_task(a2dp_audio_state_t audioState);
 
 static void get_dma_buffer_size_and_buffer_count_for_data_buffer_size(size_t batchSize, i2s_data_bit_width_t sampleBits, uint8_t channelCount, uint32_t* pDmaDescNum, uint32_t* pDmaFrameNum, size_t* pBytesToTakeFromRingBuffer);
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static const char* get_ringbuffer_mode_name(ringbuffer_mode_t ringbufferMode);
-static const char* get_i2s_task_notificationType(i2s_writer_notification_t notificationType);
+#endif
 
 
 esp_err_t create_i2s_output() {
@@ -141,7 +147,7 @@ esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWid
     // Enable the channel
     ESP_RETURN_ON_ERROR(i2s_channel_enable(s_i2s_tx_channel), BtI2sOutputTag, "i2s_channel_enable");
 
-    // Cache per channel data width in byte - We currently only support only SBC which is 16 bits per sample per channel
+    // Cache per channel data width in byte - We currently only support SBC which is 16 bits per sample per channel
     s_bytes_per_sample_per_channel = dataWidth / 8;
 
     return ESP_OK;
@@ -216,10 +222,13 @@ static esp_err_t delete_i2s_channel() {
 
 static esp_err_t start_i2s_output_task() {
 #if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
-    ESP_LOGI(BtI2sOutputTag, "Starting I2S output");
+    ESP_LOGI(BtI2sOutputTag, "Starting I2S output task");
 #endif
 
     esp_err_t err = ESP_OK;
+
+    // No known A2DP audio state
+    atomic_store(&s_atomic_current_audio_state, A2DPAudioStateNone);
 
     // Create ring buffer
     s_i2s_ringbuffer = xRingbufferCreate(RingBufferMaximumSizeInBytes, RINGBUF_TYPE_BYTEBUF);
@@ -231,7 +240,8 @@ static esp_err_t start_i2s_output_task() {
 
     // Create output task - It runs on the core not assigned to BlueDroid
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
-    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task_handler, "ht-BT-I2S", 2048, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
+    const uint32_t StackSize = (CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG == 1) ? 2 * 2048 : 2048;
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task_handler, "ht-BT-I2S", StackSize, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;
     if (err != ESP_OK) {
         ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xTaskCreate() failed");
@@ -239,19 +249,22 @@ static esp_err_t start_i2s_output_task() {
 
 cleanup:
     if (err != ESP_OK) {
-        if (s_i2s_ringbuffer != NULL) {
-            vRingbufferDelete(s_i2s_ringbuffer);
-            s_i2s_ringbuffer = NULL;
-        }
+        stop_i2s_output_task();
     }
 
     return err;
 }
 
 static esp_err_t stop_i2s_output_task() {
+#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
+    ESP_LOGI(BtI2sOutputTag, "Stopping I2S output task");
+#endif
+
     if (s_i2s_task_handle != NULL) {
         vTaskDelete(s_i2s_task_handle);
         s_i2s_task_handle = NULL;
+
+        atomic_store(&s_atomic_current_audio_state, A2DPAudioStateNone);
     }
     if (s_i2s_ringbuffer != NULL) {
         vRingbufferDelete(s_i2s_ringbuffer);
@@ -301,7 +314,7 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
 
     if (ringBufferSendOutcome == pdTRUE) {
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-        log_ringbuffer_write_stats(startEspTime, endEspTime);
+        log_ringbuffer_operation_stats(startEspTime, endEspTime, "xRingBufferSend()");
 #endif
         return size;
     }
@@ -316,7 +329,6 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
 
 static void log_ringbuffer_incoming_stats(uint32_t size) {
     static uint64_t numberOfCalls = 0;
-
     numberOfCalls++;
 
     if (numberOfCalls % 100 == 0) {
@@ -326,12 +338,24 @@ static void log_ringbuffer_incoming_stats(uint32_t size) {
         UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
         float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
 
-        ESP_LOGI(BtI2sOutputTag, "write_to_i2s_output() Writing %lu bytes | Ringbuffer stats - Waiting: %u bytes - Free: %u bytes - %f%% used", size, bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] Writing %lu | Stats - Waiting: %u bytes - Free: %u bytes - Usage: %f%%", size, bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
     }
 }
 
-static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTime) {
-    // Total number of calls
+static void log_ringbuffer_outgoing_stats(BaseType_t bytesWaitingToBeRetrieved, ringbuffer_mode_t ringbufferMode) {
+    static uint64_t numberOfCalls = 0;
+    numberOfCalls++;
+
+    if (numberOfCalls % 100 == 0) {
+        int32_t remainToBuffer = MinimumPrefetchBufferSizeInBytes - bytesWaitingToBeRetrieved;
+        float percentFetched = (100 * bytesWaitingToBeRetrieved) / MinimumPrefetchBufferSizeInBytes;
+        UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
+        float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] [%s] In buffer %u - Needs %ld - Buffered %f%% | Buffer Free %u - Occupied %f%%", get_ringbuffer_mode_name(ringbufferMode), bytesWaitingToBeRetrieved, remainToBuffer, percentFetched, freeBytes, percentOccupied);
+    }
+}
+
+static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEspTime, const char* const operationName) {
     static uint64_t numberOfCalls = 0;
     numberOfCalls++;
 
@@ -354,7 +378,7 @@ static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTim
         uint32_t thisCallTimeTicks = pdMS_TO_TICKS(thisCallTime / 1000);
         uint64_t averageTimePerCall = totallCallTime / numberOfCalls;
 
-        ESP_LOGI(BtI2sOutputTag, "write_to_i2s_output() xRingBufferSend() time -> This call: %llu us (%lu Ticks) - Average: %llu us - Min: %llu us - Max: %llu us", thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] %s | Stats - This call: %llu us (%lu Ticks) - Average: %llu us - Min: %llu us - Max: %llu us", operationName, thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
     }
 }
 
@@ -362,169 +386,69 @@ static void log_ringbuffer_write_stats(uint64_t startEspTime, uint64_t endEspTim
 
 
 static void i2s_task_handler(void* arg) {
-    ringbuffer_mode_t currentMode = RingbufferNone;
-
     for (;;) {
-        TickType_t notificationDelay = (currentMode == RingbufferWriting) || (currentMode == RingbufferPrefetching) ? 2 : portMAX_DELAY;
-        i2s_writer_notification_t notification = accept_i2s_task_notification_with_delay(notificationDelay);
+        // Wait for an A2DP "Audio Start" notification - The task is notified only when A2DP audio state changes from 'Paused' to 'Active'
+        uint32_t ulNotificationValue = 0UL;
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-    if (notification != I2sWriterNotificationNone) {
-        ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - Received notification '%s'", get_ringbuffer_mode_name(currentMode), get_i2s_task_notificationType(notification));
-    }
+        BaseType_t notificationWaitOutcome =
 #endif
-
-        switch (notification) {
-            case I2sWriterNotificationNone:
-            break;
-
-            case I2sWriterNotificationAudioActive:{
-                switch (currentMode) {
-                    case RingbufferNone:
-                    case RingbufferPaused: {
-#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                        ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - New mode 'RingbufferPrefetching'", get_ringbuffer_mode_name(currentMode));
-#endif
-                        currentMode = RingbufferPrefetching;
-                    }
-                    break;
-
-                    case RingbufferPrefetching:
-                    case RingbufferWriting:
-                    break;
-
-                    default: 
-                        ESP_LOGE(BtI2sOutputTag, "i2s_task_handler() [I2sWriterNotificationAudioActive] Unhandled mode of operation %s (%d)", get_ringbuffer_mode_name(currentMode), currentMode);
-                    break;
-                }
-            }
-            break;
-
-            case I2sWriterNotificationAudioPaused: {
-                switch (currentMode) {
-                    case RingbufferNone:
-                    case RingbufferPaused:
-                        currentMode = RingbufferPaused;
-                    break;
-
-                    case RingbufferPrefetching:
-                    case RingbufferWriting: {
-#if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
-                        ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - Draining buffer before switching to 'RingbufferPaused' mode", get_ringbuffer_mode_name(currentMode));
-#endif
-                        bool shouldWrite = true;
-                        do {
-                            const TickType_t DrainWaitTimeInTicks = 10;
-                            size_t takenFromBufferInBytes = 0;
-                            esp_err_t err = take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer, DrainWaitTimeInTicks, &takenFromBufferInBytes);
-                            switch (err) {
-                                case ESP_OK:
-#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                                    ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] - Drained %u bytes",  takenFromBufferInBytes);
-#endif
-                                break;
-
-                                case ESP_ERR_TIMEOUT: {
-                                    UBaseType_t bytesWaitingToBeRetrieved = 0;
-                                    vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
-                                    shouldWrite = bytesWaitingToBeRetrieved > 0;
-                                }
-                                break;
-
-                                default:
-                                    ESP_LOGE(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] - Failed to drain %u byte with error %d", takenFromBufferInBytes, err);
-                                break;
-                            }
-                        } while (shouldWrite);
+        xTaskNotifyWaitIndexed(I2STaskNotificationIndex, 0x0, ULONG_MAX, &ulNotificationValue, portMAX_DELAY);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                        ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [%s] - New mode 'RingbufferPaused'", get_ringbuffer_mode_name(currentMode));
-#endif
-                        currentMode = RingbufferPaused;
-                    }
-                    break;
-
-                    default:
-                        ESP_LOGE(BtI2sOutputTag, "i2s_task_handler() [I2sWriterNotificationAudioPaused] Unhandled mode of operation %s (%d)", get_ringbuffer_mode_name(currentMode), currentMode);
-                    break;
-                }
-            }
-            break;
-
-            default:
-                ESP_LOGE(BtI2sOutputTag, "i2s_task_handler() Unhandled notification type %s (%d)", get_i2s_task_notificationType(notification), notification);
-            break;
-        }
-
-        // If we are waiting for enough audio data to be in the buffer, test now
-        if (currentMode == RingbufferPrefetching) {
-            size_t bytesWaitingToBeRetrieved = 0;
-            vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
-
-#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-            int32_t remainToBuffer = MinimumPrefetchBufferSizeInBytes - bytesWaitingToBeRetrieved;
-            float percentFetched = (100 * bytesWaitingToBeRetrieved) / MinimumPrefetchBufferSizeInBytes;
-            ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferPrefetching] In buffer %u - Needs %ld - Buffered %f%%", bytesWaitingToBeRetrieved, remainToBuffer, percentFetched);
+        ESP_LOGI(BtI2sRingbufferTag, "i2s_task_handler() - xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu]", notificationWaitOutcome, ulNotificationValue);
 #endif
 
-            if (bytesWaitingToBeRetrieved >= MinimumPrefetchBufferSizeInBytes) {
-                currentMode = RingbufferWriting;
+        // Unknown ring buffer mode when A2DP audio becomes active
+        ringbuffer_mode_t ringbufferMode = RingbufferNone;
 
-#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferPrefetching] Mode changed to 'RingbufferWriting'");
-#endif
-            } else {
-                // Let audio data accumulate in buffer
-                const TickType_t PrefetchDelayTimeInTicks = 5;
-                vTaskDelay(PrefetchDelayTimeInTicks);
-            }
-        }
+        // Unknown A2DP audio state
+        a2dp_audio_state_t audioState = A2DPAudioStateNone;
 
-        // If we are writing to I2S, consume from ring buffer
-        if (currentMode == RingbufferWriting) {
-#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-            static uint64_t numberOfCalls = 0;
-            numberOfCalls++;
-
-            if (numberOfCalls % 100 == 0) {
+        do {
+            // Did we prefetch enough audio data to start writing to I2S?
+            audioState = atomic_load(&s_atomic_current_audio_state);
+            if (audioState == A2DPAudioStateActive) {
                 UBaseType_t bytesWaitingToBeRetrieved = 0;
                 vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
+                ringbufferMode = bytesWaitingToBeRetrieved >= MinimumPrefetchBufferSizeInBytes ? RingbufferWriting : RingbufferPrefetching;
 
-                UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
-                float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
-
-                ESP_LOGI(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] Buffer waiting %u - Free %u - %f%% used", bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
-            }
-#endif
-            const TickType_t WaitTimeInTicks = 10;
-            size_t bytesTakenFromBuffer = 0;
-            esp_err_t err = take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer, WaitTimeInTicks, &bytesTakenFromBuffer);
-            if (err != ESP_OK) {
-                switch (err) {
-                    case ESP_ERR_TIMEOUT: {
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                        UBaseType_t bytesWaitingToBeRetrieved = 0;
-                        vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
-                        if (bytesWaitingToBeRetrieved > 0) {
-                            ESP_LOGW(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] Ring buffer data read timeout - In buffer waiting %u", bytesWaitingToBeRetrieved);
-                        }
+                log_ringbuffer_outgoing_stats(bytesWaitingToBeRetrieved, ringbufferMode);
 #endif
-                    }
-                    break;
+            }
 
-                    default:
-                        ESP_LOGE(BtI2sOutputTag, "i2s_task_handler() [RingbufferWriting] i2s_channel_write() failed with %d", err);
-                    break;
+            // Are we ready to write audio data to I2S?
+            audioState = atomic_load(&s_atomic_current_audio_state);
+            if (audioState == A2DPAudioStateActive) {
+                if (ringbufferMode == RingbufferWriting) {
+                    size_t bytesTakenFromBuffer = 0;
+                    take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer, &bytesTakenFromBuffer);
+                } 
+            }
+            
+            // Are we pausing audio ?
+            audioState = atomic_load(&s_atomic_current_audio_state);
+            if (audioState == A2DPAudioStatePaused) {
+                drain_ringbuffer();
+            }
+
+            // When prefetching is necessary, wait for a little for the ring buffer to fill up
+            audioState = atomic_load(&s_atomic_current_audio_state);
+            if (audioState == A2DPAudioStateActive) {
+                if (ringbufferMode == RingbufferPrefetching) {
+                    const TickType_t PrefetchDelayTimeInTicks = 8;
+                    vTaskDelay(PrefetchDelayTimeInTicks);
                 }
             }
-        }
+        } while (audioState == A2DPAudioStateActive);
     }
 }
 
-static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, TickType_t readMaxWaitInTicks, size_t* pBytesTakenFromBuffer) {
+static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, size_t* pBytesTakenFromBuffer) {
     *pBytesTakenFromBuffer = 0;
 
-    // Retrieve the number of available bytes - We would like to read a multiple of samples so we can apply software volume in a mneaingful way
+    // Retrieve the number of available bytes - We would like to read a multiple of samples so we can apply software volume in a meaningful way
     UBaseType_t bytesWaitingToBeRetrieved = 0;
     vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
     size_t maxToRetrieveUnaligned = bytesWaitingToBeRetrieved > maxBytesToTakeFromBuffer ? maxBytesToTakeFromBuffer : bytesWaitingToBeRetrieved;
@@ -533,17 +457,45 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
     size_t bytesToTake = (maxToRetrieveUnaligned >> (s_bytes_per_sample_per_channel - 1)) << (s_bytes_per_sample_per_channel - 1);
     if (bytesToTake > 0) {
         size_t sizeRetrievedFromRingBufferInBytes = 0;
-        void* data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, readMaxWaitInTicks, bytesToTake);
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+        uint64_t ringbufferReceiveStartEspTime = esp_timer_get_time();
+#endif
+        // ------------------------------------------------------------------------------------------------
+        // xRingbufferReceiveUpTo() on ESP32 was measured as follows (for a buffer of 4096 bytes of data):
+        //  - Average time:  3 us
+        //  - Minimum time:  3 us
+        //  - Maximum time: 18 us
+        //
+        // With the default FreeRTOS configuration (configTICK_RATE_HZ = 100Hz):
+        //  - Anything below 1000 us is less than 1 FreeRTOS tick
+        //
+        // We choose `ReadWaitTimeInTicks` below as 10 times the maximum xRingbufferReceiveUpTo() time
+        // ------------------------------------------------------------------------------------------------
+        const TickType_t ReadWaitTimeInTicks = pdMS_TO_TICKS(10 * 1);
+        void* data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, ReadWaitTimeInTicks, bytesToTake);
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+        uint64_t ringbufferReceiveEndEspTime = esp_timer_get_time();
+#endif
         if (data != NULL) {
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+            log_ringbuffer_operation_stats(ringbufferReceiveStartEspTime, ringbufferReceiveEndEspTime, "xRingbufferReceiveUpTo()");
+#endif
             *pBytesTakenFromBuffer = sizeRetrievedFromRingBufferInBytes;
 
             apply_volume(data, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
 
             size_t bytesWritten = 0;
             esp_err_t err = i2s_channel_write(s_i2s_tx_channel, (void*) data, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
-            vRingbufferReturnItem(s_i2s_ringbuffer, (void *) data);
+            if (err != ESP_OK) {
+                ESP_LOGE(BtI2sOutputTag, "i2s_channel_write() failed with %d - Attempted to write %u bytes", err, sizeRetrievedFromRingBufferInBytes);
+            }
+
+            vRingbufferReturnItem(s_i2s_ringbuffer, data);
             return err;
         } else {
+            ESP_LOGW(BtI2sOutputTag, "xRingbufferReceiveUpTo() Ring buffer data read timeout - Attempted to read %u bytes", bytesToTake);
             return ESP_ERR_TIMEOUT;
         }
     }
@@ -564,42 +516,70 @@ static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
     }
 }
 
-static i2s_writer_notification_t accept_i2s_task_notification_with_delay(TickType_t delayTicks) {
-    uint32_t ulNotificationValue = 0UL;
-    const UBaseType_t notificationIndex = I2STaskNotificationIndex;
-    BaseType_t notificationWaitOutcome = xTaskNotifyWaitIndexed(notificationIndex, 0x0, 0x0, &ulNotificationValue, delayTicks);
-    ESP_LOGD(BtI2sRingbufferTag, "accept_i2s_task_notification_with_delay() - xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu] [Timeout: %lu ticks]", notificationWaitOutcome, ulNotificationValue, delayTicks);
-    switch (notificationWaitOutcome) {
-        case pdTRUE:
-            // Notification received
-            return ulNotificationValue;
-        case pdFALSE:
-            // Timeout - No notification was received
-            return I2sWriterNotificationNone;
-        default:
-            // Unknown notification - Log and ignore the unknown message
-            ESP_LOGE(BtI2sRingbufferTag, "accept_i2s_task_notification_with_delay() - xTaskNotifyWaitIndexed() received unknown notification (%lu)", ulNotificationValue);
-            return I2sWriterNotificationNone;
-    }
+static void drain_ringbuffer() {
+    bool doneDraining = false;
+    do {
+        // Retrieve the number of available bytes - We can retrieve all the buffer in one go since we are draining
+        UBaseType_t bytesWaitingToBeRetrieved = 0;
+        vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+        ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - In buffer %u bytes", bytesWaitingToBeRetrieved);
+#endif
+        if (bytesWaitingToBeRetrieved > 0) {
+            // ------------------------------------------------------------------------------------------------
+            // xRingbufferReceiveUpTo() on ESP32 was measured as follows (for a buffer of 4096 bytes of data):
+            //  - Average time:  3 us
+            //  - Minimum time:  3 us
+            //  - Maximum time: 18 us
+            //
+            // With the default FreeRTOS configuration (configTICK_RATE_HZ = 100Hz):
+            //  - Anything below 1000 us is less than 1 FreeRTOS tick
+            //
+            // We choose `ReadWaitTimeInTicks` below as 10 times the maximum xRingbufferReceiveUpTo() time
+            // ------------------------------------------------------------------------------------------------
+            const TickType_t ReadWaitTimeInTicks = pdMS_TO_TICKS(10 * 1);
+            size_t sizeRetrievedFromRingBufferInBytes = 0;
+            void* data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, ReadWaitTimeInTicks, bytesWaitingToBeRetrieved);
+            
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+            ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - xRingbufferReceiveUpTo() -> %s - Retrieved %u bytes out of %u bytes", data != NULL ? "SUCCESS" : "FAILED", sizeRetrievedFromRingBufferInBytes, bytesWaitingToBeRetrieved);
+#endif
+
+            if (data != NULL) {
+                vRingbufferReturnItem(s_i2s_ringbuffer, data);
+            }
+        }
+
+        doneDraining = bytesWaitingToBeRetrieved == 0;
+
+    } while (!doneDraining);
 }
 
 static esp_err_t notify_a2dp_audio_active() {
-    return notify_i2s_task(I2sWriterNotificationAudioActive);
+    return notify_i2s_task(A2DPAudioStateActive);
 }
 
 static esp_err_t notify_a2dp_audio_paused() {
-    return notify_i2s_task(I2sWriterNotificationAudioPaused);
+    return notify_i2s_task(A2DPAudioStatePaused);
 }
 
-static esp_err_t notify_i2s_task(i2s_writer_notification_t notificationType) {
-    const UBaseType_t notificationIndex = I2STaskNotificationIndex;
+static esp_err_t notify_i2s_task(a2dp_audio_state_t audioState) {
+    // Update the current audio state
+    atomic_exchange(&s_atomic_current_audio_state, audioState);
 
+    esp_err_t err = ESP_OK;
+
+    // If the audio is switching to "Active", wake up the I2S processing task
+    if (audioState == A2DPAudioStateActive) {
 #if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
-    ESP_LOGI(BtI2sRingbufferTag, "Notifying I2S task -> Slot %d - Type '%s'", notificationIndex, get_i2s_task_notificationType(notificationType));
+            ESP_LOGI(BtI2sRingbufferTag, "Notifying I2S task -> Slot %d - Value 0x%"PRIu32, I2STaskNotificationIndex, I2STaskNotificationValue);
 #endif
+        const BaseType_t outcome = xTaskNotifyIndexed(s_i2s_task_handle, I2STaskNotificationIndex, I2STaskNotificationValue, eSetValueWithOverwrite);
+        err = outcome == pdPASS ? ESP_OK : ESP_FAIL;
+    }
 
-    const BaseType_t outcome = xTaskNotifyIndexed(s_i2s_task_handle, notificationIndex, notificationType, eSetValueWithOverwrite);
-    return outcome == pdPASS ? ESP_OK : ESP_FAIL;
+    return err;
 }
 
 static void get_dma_buffer_size_and_buffer_count_for_data_buffer_size(size_t batchSize, i2s_data_bit_width_t sampleBits, uint8_t channelCount, uint32_t* pDmaDescNum, uint32_t* pDmaFrameNum, size_t* pBytesToTakeFromRingBuffer) {
@@ -638,12 +618,13 @@ static void get_dma_buffer_size_and_buffer_count_for_data_buffer_size(size_t bat
 #endif
 }
 
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+
 static const char* get_ringbuffer_mode_name(ringbuffer_mode_t ringbufferMode) {
     switch (ringbufferMode) {
         case RingbufferNone:
             return "RingbufferNone";
-        case RingbufferPaused:
-            return "RingbufferPaused";
         case RingbufferPrefetching:
             return "RingbufferPrefetching";
         case RingbufferWriting:
@@ -653,15 +634,4 @@ static const char* get_ringbuffer_mode_name(ringbuffer_mode_t ringbufferMode) {
     }
 }
 
-static const char* get_i2s_task_notificationType(i2s_writer_notification_t notificationType) {
-    switch (notificationType) {
-        case I2sWriterNotificationNone:
-            return "I2sWriterNotificationNone";
-        case I2sWriterNotificationAudioActive:
-            return "I2sWriterNotificationAudioActive";
-        case I2sWriterNotificationAudioPaused:
-            return "I2sWriterNotificationAudioPaused";
-        default:
-            return "N/A";
-    }
-}
+#endif
