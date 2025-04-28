@@ -41,6 +41,13 @@ menu "Holiday Tree"
         help
             Static pin to request when pairing
 
+    config HOLIDAYTREE_I2S_TASK_STACK_SIZE
+        int "I2S task stack size"
+        default 2048 if HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG = n
+        default 4096 if HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG = y
+        help
+            Stack size for I2S task
+
     config  HOLIDAYTREE_LEDS_LOG
         bool "Log LEDs animation processing"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
