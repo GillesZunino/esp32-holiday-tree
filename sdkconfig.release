@@ -2,7 +2,7 @@
 # Copyright 2024, Gilles Zunino
 # -----------------------------------------------------------------------------------
 
-# Enable Speed Optimizations (-O2)
+# Enable speed optimizations (-O2)
 CONFIG_COMPILER_OPTIMIZATION_DEBUG=
 CONFIG_OPTIMIZATION_LEVEL_DEBUG=
 CONFIG_COMPILER_OPTIMIZATION_LEVEL_DEBUG=
