@@ -7,11 +7,11 @@
 #include <esp_check.h>
 #include <esp_log.h>
 
+#include "bt/bt_utilities.h"
+#include "bt/bt_bd_addr_utils.h"
 #include "bt/bt_device_preferences.h"
 #include "bt/bt_device_manager.h"
 #include "bt/bt_avrc_volume.h"
-#include "bt/bt_utilities.h"
-
 
 
 // Bluetooth device manager log tags

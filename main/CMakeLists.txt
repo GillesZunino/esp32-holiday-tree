@@ -4,6 +4,7 @@ set(srcs
 
         "bt/bt_init.c"
         "bt/bt_utilities.c"
+        "bt/bt_bd_addr_utils.c"
         "bt/bt_work_dispatcher.c"
         "bt/bt_gap.c"
         "bt/bt_avrc.c"
