@@ -8,6 +8,7 @@
 #include <esp_avrc_api.h>
 
 
+#include "bt/bt_device_manager.h"
 #include "bt/bt_work_dispatcher.h"
 #include "bt/bt_avrc_volume.h"
 #include "bt/bt_utilities.h"
@@ -41,6 +42,17 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_CONNECTION_STATE_EVT %s remote [%s]",
                     params->conn_stat.connected ? "connected to" : "disconnected from", get_bda_string(params->conn_stat.remote_bda, bdaStr));
 #endif
+            if (params->conn_stat.connected) {
+                esp_err_t err = bt_device_manager_device_connected(&params->conn_stat);
+                if (err != ESP_OK) {
+                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_connected() failed with %d", err);
+                }
+            } else {
+                esp_err_t err = bt_device_manager_device_disconnected(&params->conn_stat);
+                if (err != ESP_OK) {
+                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_disconnected() failed with %d", err);
+                }
+            }
         }
         break;
 

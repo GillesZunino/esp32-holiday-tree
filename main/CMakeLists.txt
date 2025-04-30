@@ -14,7 +14,10 @@ set(srcs
 
         "bt/i2s_output.c"
 
-        "bt/bt_connection_settings.c"
+        "bt/bt_device_manager.c"
+        "bt/bt_device_preferences.c"
+
+        "configuration/nvs_configuration.c"
 
         "leds/led_init.c"
         "leds/led_internals.c"

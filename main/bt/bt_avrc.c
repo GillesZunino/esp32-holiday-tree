@@ -56,7 +56,7 @@ esp_err_t setup_avrc_profile() {
     //
 
     // Ensure output volume is set to default
-    reset_volume_to_default();
+    set_volume_avrc(get_default_volume_avrc());
 
     // Initialize AVRC Controller module
     ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BtAvrcTag, "esp_avrc_ct_init() failed");

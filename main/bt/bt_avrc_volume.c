@@ -59,8 +59,8 @@ void set_volume_avrc(uint8_t volumeAvrc) {
     _lock_release(&s_volume_lock);
 }
 
-void reset_volume_to_default() {
-    set_volume_avrc(DefaultVolumeAvrc);
+uint8_t get_default_volume_avrc() {
+    return DefaultVolumeAvrc;
 }
 
 uint8_t get_volume_percent() {

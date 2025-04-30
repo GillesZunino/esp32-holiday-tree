@@ -7,10 +7,11 @@
 #define AVRC_VOLUME_TO_PERCENT(v) ((uint16_t) (((v) * 100) / 127))
 #define PERCENT_VOLUME_TO_AVRC(v) ((uint16_t) (((v) * 127) / 100))
 
+
 uint8_t get_volume_avrc();
 void set_volume_avrc(uint8_t volumeAvrc);
 
-void reset_volume_to_default();
+uint8_t get_default_volume_avrc();
 
 uint8_t get_volume_percent();
 float get_volume_factor();

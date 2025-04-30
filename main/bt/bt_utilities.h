@@ -9,6 +9,11 @@
 #include <esp_a2dp_api.h>
 
 
+bool is_null_bda(const uint8_t* const bda);
+void copy_bda(uint8_t* dest_bda, const uint8_t* const src_bda);
+void clear_bda(uint8_t* bda);
+
+
 const char* get_bda_string(const esp_bd_addr_t bda, char str[18]);
 
 const char* get_gap_link_key_type_name(esp_bt_link_key_type_t linkKeyType);
