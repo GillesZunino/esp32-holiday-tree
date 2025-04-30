@@ -437,7 +437,7 @@ static void i2s_task_handler(void* arg) {
             audioState = atomic_load(&s_atomic_current_audio_state);
             if (audioState == A2DPAudioStateActive) {
                 if (ringbufferMode == RingbufferPrefetching) {
-                    const TickType_t PrefetchDelayTimeInTicks = 8;
+                    const TickType_t PrefetchDelayTimeInTicks = 1;
                     vTaskDelay(PrefetchDelayTimeInTicks);
                 }
             }
