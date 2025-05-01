@@ -87,7 +87,7 @@ static void log_ringbuffer_outgoing_stats(BaseType_t bytesWaitingToBeRetrieved, 
 static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEspTime, const char* const operationName);
 #endif
 
-static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, size_t* pBytesTakenFromBuffer);
+static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer);
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample);
 static void drain_ringbuffer();
 
@@ -445,9 +445,7 @@ static void i2s_task_handler(void* arg) {
     }
 }
 
-static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer, size_t* pBytesTakenFromBuffer) {
-    *pBytesTakenFromBuffer = 0;
-
+static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer) {
     // Retrieve the number of available bytes - We would like to read a multiple of samples so we can apply software volume in a meaningful way
     UBaseType_t bytesWaitingToBeRetrieved = 0;
     vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
@@ -482,8 +480,6 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
             log_ringbuffer_operation_stats(ringbufferReceiveStartEspTime, ringbufferReceiveEndEspTime, "xRingbufferReceiveUpTo()");
 #endif
-            *pBytesTakenFromBuffer = sizeRetrievedFromRingBufferInBytes;
-
             apply_volume(data, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
 
             size_t bytesWritten = 0;
