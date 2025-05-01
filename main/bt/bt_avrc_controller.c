@@ -11,6 +11,7 @@
 
 #include "bt/bt_work_dispatcher.h"
 #include "bt/bt_avrc_volume.h"
+#include "bt/bt_bd_addr_utils.h"
 #include "bt/bt_utilities.h"
 #include "bt/bt_avrc_controller.h"
 
