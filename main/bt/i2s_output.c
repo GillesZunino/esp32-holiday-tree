@@ -422,8 +422,10 @@ static void i2s_task_handler(void* arg) {
             audioState = atomic_load(&s_atomic_current_audio_state);
             if (audioState == A2DPAudioStateActive) {
                 if (ringbufferMode == RingbufferWriting) {
-                    size_t bytesTakenFromBuffer = 0;
-                    take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer, &bytesTakenFromBuffer);
+                    esp_err_t err = take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer);
+                    if (err != ESP_OK) {
+                        ESP_LOGW(BtI2sRingbufferTag, "i2s_task_handler() - take_from_ringbuffer_and_write_to_i2s() failed (%d) - [s_bytes_to_take_from_ringbuffer: %u]", err, s_bytes_to_take_from_ringbuffer);
+                    }
                 } 
             }
             
