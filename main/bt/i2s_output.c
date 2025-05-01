@@ -70,6 +70,8 @@ static RingbufHandle_t s_i2s_ringbuffer = NULL;
 static uint8_t s_bytes_per_sample_per_channel = 0;
 static size_t s_bytes_to_take_from_ringbuffer = 0;
 
+static uint8_t* s_i2s_audio_processing_buffer = NULL;
+
 static volatile atomic_uint_fast8_t s_atomic_current_audio_state = A2DPAudioStateNone;
 
 
@@ -230,6 +232,14 @@ static esp_err_t start_i2s_output_task() {
     // No known A2DP audio state
     atomic_store(&s_atomic_current_audio_state, A2DPAudioStateNone);
 
+    // Allocate audio processing buffer
+    s_i2s_audio_processing_buffer = (uint8_t*)heap_caps_calloc(1, s_bytes_to_take_from_ringbuffer, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (s_i2s_audio_processing_buffer == NULL) {
+        ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - heap_caps_calloc() failed");
+        err = ESP_ERR_NO_MEM;
+        goto cleanup;
+    }
+
     // Create ring buffer
     s_i2s_ringbuffer = xRingbufferCreate(RingBufferMaximumSizeInBytes, RINGBUF_TYPE_BYTEBUF);
     if (s_i2s_ringbuffer == NULL) {
@@ -269,6 +279,10 @@ static esp_err_t stop_i2s_output_task() {
     if (s_i2s_ringbuffer != NULL) {
         vRingbufferDelete(s_i2s_ringbuffer);
         s_i2s_ringbuffer = NULL;
+    }
+    if (s_i2s_audio_processing_buffer != NULL) {
+        heap_caps_free(s_i2s_audio_processing_buffer);
+        s_i2s_audio_processing_buffer = NULL;
     }
 
     return ESP_OK;
@@ -448,6 +462,8 @@ static void i2s_task_handler(void* arg) {
 }
 
 static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFromBuffer) {
+    esp_err_t err = ESP_ERR_INVALID_SIZE;
+
     // Retrieve the number of available bytes - We would like to read a multiple of samples so we can apply software volume in a meaningful way
     UBaseType_t bytesWaitingToBeRetrieved = 0;
     vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
@@ -482,23 +498,61 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
             log_ringbuffer_operation_stats(ringbufferReceiveStartEspTime, ringbufferReceiveEndEspTime, "xRingbufferReceiveUpTo()");
 #endif
-            apply_volume(data, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
+            // Copy the received data to our processing buffer and return the taken bytes to the ringbuffer
+            memcpy(s_i2s_audio_processing_buffer, data, sizeRetrievedFromRingBufferInBytes);
+            vRingbufferReturnItem(s_i2s_ringbuffer, data);
 
-            size_t bytesWritten = 0;
-            esp_err_t err = i2s_channel_write(s_i2s_tx_channel, (void*) data, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
+            // ------------------------------------------------------------------------------------------------
+            // xRingbufferReceiveUpTo() needs to be called twice when the ring buffer wraps around
+            // We detect this condition and append the result of the second call to the data retrieved
+            //
+            // This is necessary because our audio processing expects a finite number of samples to process
+            // Failure to do so creates audibles pops and clicks in the audio stream
+            // ------------------------------------------------------------------------------------------------
+            err = sizeRetrievedFromRingBufferInBytes == bytesToTake ? ESP_OK : ESP_ERR_INVALID_SIZE;
             if (err != ESP_OK) {
-                ESP_LOGE(BtI2sOutputTag, "i2s_channel_write() failed with %d - Attempted to write %u bytes", err, sizeRetrievedFromRingBufferInBytes);
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+                ESP_LOGW(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer WRAP AROUND - Retrieved %u bytes out of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
+#endif
+                size_t bytesTakenFromRingBuffer = sizeRetrievedFromRingBufferInBytes;
+                size_t bytesRemainingToTake = bytesToTake - bytesTakenFromRingBuffer;
+                data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, ReadWaitTimeInTicks, bytesRemainingToTake);
+                if (data != NULL) {
+                    memcpy(s_i2s_audio_processing_buffer + bytesTakenFromRingBuffer, data, sizeRetrievedFromRingBufferInBytes);
+                    vRingbufferReturnItem(s_i2s_ringbuffer, data);
+
+#if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
+                    ESP_LOGI(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer RE-READ - Retrieved %u bytes out of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesRemainingToTake);
+#endif
+                    // Calculate the total number of bytes acquired after the second read
+                    sizeRetrievedFromRingBufferInBytes += bytesTakenFromRingBuffer;
+                    err = sizeRetrievedFromRingBufferInBytes == bytesToTake ? ESP_OK : ESP_ERR_INVALID_SIZE;
+                    if (err != ESP_OK) {
+                        ESP_LOGE(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - WRAP AROUND Compensation INCOMPLETE - TOTAL %u bytes of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
+                    }
+                } else {
+                    ESP_LOGE(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - WRAP AROUND xRingbufferReceiveUpTo() failed");
+                    err = ESP_ERR_TIMEOUT;
+                }
             }
 
-            vRingbufferReturnItem(s_i2s_ringbuffer, data);
-            return err;
+            // Data has been acquired and is a multipe of audio samples - Apply processing and write to ISS
+            if (err == ESP_OK) {
+                apply_volume(s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
+
+                size_t bytesWritten = 0;
+                err = i2s_channel_write(s_i2s_tx_channel, (void*) s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
+                if (err != ESP_OK) {
+                    ESP_LOGE(BtI2sOutputTag, "i2s_channel_write() failed with %d - Attempted to write %u bytes", err, sizeRetrievedFromRingBufferInBytes);
+                }
+            }
         } else {
             ESP_LOGW(BtI2sOutputTag, "xRingbufferReceiveUpTo() Ring buffer data read timeout - Attempted to read %u bytes", bytesToTake);
-            return ESP_ERR_TIMEOUT;
+            err = ESP_ERR_TIMEOUT;
         }
     }
 
-    return ESP_ERR_TIMEOUT;
+    return err;
 }
 
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
