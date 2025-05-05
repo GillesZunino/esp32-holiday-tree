@@ -4,8 +4,6 @@
 
 #include <string.h>
 
-#include <esp_avrc_api.h>
-
 
 #include "bt/a2d_sbc_constants.h"
 #include "bt/bt_utilities.h"
@@ -140,6 +138,40 @@ const char* get_avrc_notification_name(uint8_t eventId) {
             return "ESP_AVRC_RN_UIDS_CHANGE";
         case ESP_AVRC_RN_VOLUME_CHANGE:
             return "ESP_AVRC_RN_VOLUME_CHANGE";
+        default:
+            return "N/A";
+    }
+}
+
+const char* get_avrc_playback_stat_name(esp_avrc_playback_stat_t playbackStat) {
+    switch (playbackStat) {
+        case ESP_AVRC_PLAYBACK_STOPPED:
+            return "ESP_AVRC_PLAYBACK_STOPPED";
+        case ESP_AVRC_PLAYBACK_PLAYING:
+            return "ESP_AVRC_PLAYBACK_PLAYING";
+        case ESP_AVRC_PLAYBACK_PAUSED:
+            return "ESP_AVRC_PLAYBACK_PAUSED";
+        case ESP_AVRC_PLAYBACK_FWD_SEEK:
+            return "ESP_AVRC_PLAYBACK_FWD_SEEK";
+        case ESP_AVRC_PLAYBACK_REV_SEEK:
+            return "ESP_AVRC_PLAYBACK_REV_SEEK";
+        case ESP_AVRC_PLAYBACK_ERROR:
+            return "ESP_AVRC_PLAYBACK_ERROR";
+        default:
+            return "N/A";
+    }
+}
+
+const char* get_avrc_battery_stat_name(esp_avrc_batt_stat_t batteryStat) {
+    switch (batteryStat) {
+        case ESP_AVRC_BATT_NORMAL:
+            return "ESP_AVRC_BATT_NORMAL";
+        case ESP_AVRC_BATT_WARNING:
+            return "ESP_AVRC_BATT_WARNING";
+        case ESP_AVRC_BATT_CRITICAL:
+            return "ESP_AVRC_BATT_CRITICAL";
+        case ESP_AVRC_BATT_EXTERNAL:
+            return "ESP_AVRC_BATT_EXTERNAL";
         default:
             return "N/A";
     }

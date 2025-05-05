@@ -30,6 +30,8 @@ static const uint8_t NotificationTrackChangeTransactionLabel = 2;
 static const uint8_t NotificationPlaybackChangeTransactionLabel = 3;
 static const uint8_t NotificationPlayPositionChangedTransactionLabel = 4;
 
+static const uint32_t NotificationTrackChangeIntervalInSeconds = 1;
+
 
 // Stores notification capabilities of the Controller sending us audio via A2DP
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_notifications_capabilities = {0};
@@ -37,7 +39,8 @@ static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_notifications_capabilities = {0};
 
 static void avrc_controller_event_handler(uint16_t event, void* rawParam);
 static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn_param_t *params);
-static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t event_to_register_for, uint8_t transactionLabel, uint32_t eventParameter);
+static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t event_to_register_for, uint8_t transactionLabel);
+static esp_err_t register_for_notification_with_parameter(esp_avrc_rn_event_ids_t event_to_register_for, uint8_t transactionLabel, uint32_t eventParameter);
 
 
 void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t* param) {
@@ -118,6 +121,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
 
        case ESP_AVRC_CT_CHANGE_NOTIFY_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
+
             ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> %s (0x%x)", get_avrc_notification_name(params->change_ntf.event_id), params->change_ntf.event_id);
 #endif
             if (handle_controller_notification_event(params->change_ntf.event_id, &params->change_ntf.event_parameter) != ESP_OK) {
@@ -157,9 +161,9 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
             s_avrc_peer_notifications_capabilities.bits = params->get_rn_caps_rsp.evt_set.bits;
             
             // We now have the remote controller capabilities. Register for notifications we need and are supported
-            register_for_notification(ESP_AVRC_RN_TRACK_CHANGE, NotificationTrackChangeTransactionLabel, 0);
-            register_for_notification(ESP_AVRC_RN_PLAY_STATUS_CHANGE, NotificationPlaybackChangeTransactionLabel, 0);
-            register_for_notification(ESP_AVRC_RN_PLAY_POS_CHANGED, NotificationPlayPositionChangedTransactionLabel, 10);
+            register_for_notification(ESP_AVRC_RN_TRACK_CHANGE, NotificationTrackChangeTransactionLabel);
+            register_for_notification(ESP_AVRC_RN_PLAY_STATUS_CHANGE, NotificationPlaybackChangeTransactionLabel);
+            register_for_notification_with_parameter(ESP_AVRC_RN_PLAY_POS_CHANGED, NotificationPlayPositionChangedTransactionLabel, NotificationTrackChangeIntervalInSeconds);
         }
         break;
 
@@ -180,11 +184,18 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
 
 static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn_param_t *params) {
     switch (event) {
+        case ESP_AVRC_RN_VOLUME_CHANGE: {
+#if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_VOLUME_CHANGE - Volume changed: %d (0x%x)", params->volume, params->volume);
+#endif
+            return ESP_OK;
+        }
+
         case ESP_AVRC_RN_PLAY_STATUS_CHANGE: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_STATUS_CHANGE: Playback status changed: 0x%x", params->playback);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_STATUS_CHANGE - Playback status changed - %s (0x%x)", get_avrc_playback_stat_name(params->playback), params->playback);
 #endif
-            return register_for_notification(ESP_AVRC_RN_PLAY_STATUS_CHANGE, NotificationPlaybackChangeTransactionLabel, 0);
+            return register_for_notification(ESP_AVRC_RN_PLAY_STATUS_CHANGE, NotificationPlaybackChangeTransactionLabel);
         }
 
         case ESP_AVRC_RN_TRACK_CHANGE: {
@@ -192,25 +203,36 @@ static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn
             ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_TRACK_CHANGE");
 #endif
             esp_err_t send_err = esp_avrc_ct_send_metadata_cmd(CommandGetMetadataTransactionLabel, ESP_AVRC_MD_ATTR_TITLE | ESP_AVRC_MD_ATTR_ARTIST | ESP_AVRC_MD_ATTR_ALBUM | ESP_AVRC_MD_ATTR_GENRE);
-            esp_err_t register_err = register_for_notification(ESP_AVRC_RN_TRACK_CHANGE, NotificationTrackChangeTransactionLabel, 0);
+            esp_err_t register_err = register_for_notification(ESP_AVRC_RN_TRACK_CHANGE, NotificationTrackChangeTransactionLabel);
             return send_err == ESP_OK ? register_err : send_err;
         }
 
         case ESP_AVRC_RN_PLAY_POS_CHANGED: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_POS_CHANGED: Play position changed: %"PRIu32"-ms", params->play_pos);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_POS_CHANGED - Play position changed: %"PRIu32" ms", params->play_pos);
 #endif
-            return register_for_notification(ESP_AVRC_RN_PLAY_POS_CHANGED, NotificationPlayPositionChangedTransactionLabel, 10);
+            return register_for_notification_with_parameter(ESP_AVRC_RN_PLAY_POS_CHANGED, NotificationPlayPositionChangedTransactionLabel, NotificationTrackChangeIntervalInSeconds);
+        }
+
+        case ESP_AVRC_RN_BATTERY_STATUS_CHANGE: {
+#if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_BATTERY_STATUS_CHANGE - Battery status changed - %s (0x%x)", get_avrc_battery_stat_name(params->batt), params->batt);
+#endif
+            return ESP_OK;
         }
 
         default: {
-            ESP_LOGW(BtAvrcControllerTag, "[CT] [NOTIFY] unhandled event: %d", event);
+            ESP_LOGW(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> Unhandled %s (0x%x)", get_avrc_notification_name(event), event);
             return ESP_OK;
         }
     }
 }
 
-static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t eventToRegisterFor, uint8_t transactionLabel, uint32_t eventParameter) {
+static esp_err_t register_for_notification(esp_avrc_rn_event_ids_t eventToRegisterFor, uint8_t transactionLabel) {
+    return register_for_notification_with_parameter(eventToRegisterFor, transactionLabel, 0);
+}
+
+static esp_err_t register_for_notification_with_parameter(esp_avrc_rn_event_ids_t eventToRegisterFor, uint8_t transactionLabel, uint32_t eventParameter) {
     if (esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_TEST, &s_avrc_peer_notifications_capabilities, eventToRegisterFor)) {
         return esp_avrc_ct_send_register_notification_cmd(transactionLabel, eventToRegisterFor, eventParameter);
     }
