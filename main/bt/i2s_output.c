@@ -40,7 +40,7 @@ static const size_t A2DPBatchSizeInBytes = 4096; // 4K bytes
 static const size_t RingBufferMaximumSizeInBytes = 8 * A2DPBatchSizeInBytes;
 
 // Number of bytes to prefetch before sending data to the I2S output - Expressed as a multiple of the batch size (A2DPBatchSizeInBytes)
-static const size_t MinimumPrefetchBufferSizeInBytes = 2 * A2DPBatchSizeInBytes;
+static const size_t MinimumPrefetchBufferSizeInBytes = 1 * A2DPBatchSizeInBytes;
 
 
 // I2S task notification index and value

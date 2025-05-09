@@ -212,7 +212,7 @@ char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
     return featuresStr;
 }
 
-char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
+char** get_avrc_controller_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
     if (featuresStr == NULL) {
         return NULL;
     }
@@ -230,6 +230,41 @@ char** get_avrc_feature_flags(uint16_t featureFlags, char* featuresStr[8]) {
 
     if ((featureFlags & ESP_AVRC_FEAT_FLAG_COVER_ART_GET_IMAGE_PROP) == ESP_AVRC_FEAT_FLAG_COVER_ART_GET_IMAGE_PROP) {
         featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_COVER_ART_GET_IMAGE_PROP (0x0080)";
+    }
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_BROWSING) == ESP_AVRC_FEAT_FLAG_BROWSING) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_BROWSING (0x0040)";
+    }
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_CAT4) == ESP_AVRC_FEAT_FLAG_CAT4) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_CAT4 (0x0008)";
+    }
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_CAT3) == ESP_AVRC_FEAT_FLAG_CAT3) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_CAT3 (0x0004)";
+    }
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_CAT2) == ESP_AVRC_FEAT_FLAG_CAT2) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_CAT2 (0x0002)";
+    }
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_CAT1) == ESP_AVRC_FEAT_FLAG_CAT1) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_CAT1 (0x0001)";
+    }
+
+    return featuresStr;
+}
+
+char** get_avrc_target_feature_flags(uint16_t featureFlags, char* featuresStr[6]) {
+    if (featuresStr == NULL) {
+        return NULL;
+    }
+
+    memset(featuresStr, 0, 6 * sizeof(featuresStr[0]));
+    uint8_t index = 0;
+
+    if ((featureFlags & ESP_AVRC_FEAT_FLAG_TG_COVER_ART) == ESP_AVRC_FEAT_FLAG_TG_COVER_ART) {
+        featuresStr[index++] = "ESP_AVRC_FEAT_FLAG_TG_COVER_ART (0x0100)";
     }
 
     if ((featureFlags & ESP_AVRC_FEAT_FLAG_BROWSING) == ESP_AVRC_FEAT_FLAG_BROWSING) {

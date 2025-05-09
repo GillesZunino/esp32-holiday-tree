@@ -132,7 +132,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
 
         case ESP_AVRC_CT_REMOTE_FEATURES_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT feature bit mask: 0x%"PRIx32", TG features: 0x%"PRIx16, params->rmt_feats.feat_mask, params->rmt_feats.tg_feat_flag);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT feature mask: 0x%"PRIx32", TG features: 0x%"PRIx16, params->rmt_feats.feat_mask, params->rmt_feats.tg_feat_flag);
             
             // Features
             char* featuresStr[6];
@@ -142,12 +142,12 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
                 ESP_LOGI(BtAvrcControllerTag, "[CT]\t%s", featuresStr[index]);
             }
 
-            // CT Flags
+            // TG feature flags
             char* featureFlagsStr[8];
-            get_avrc_feature_flags(params->rmt_feats.tg_feat_flag, featureFlagsStr);
+            get_avrc_target_feature_flags(params->rmt_feats.tg_feat_flag, featureFlagsStr);
             ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_REMOTE_FEATURES_EVT rmt_feats.tg_feat_flag (0x%"PRIx16")", params->rmt_feats.tg_feat_flag);
             for (uint8_t index = 0; (featureFlagsStr[index] != NULL) && (index < 8); index++) {
-                ESP_LOGI(BtAvrcControllerTag, "[CT]\t%s", featureFlagsStr[index]);
+                ESP_LOGI(BtAvrcControllerTag, "[TG]\t%s", featureFlagsStr[index]);
             }
 #endif
         }
