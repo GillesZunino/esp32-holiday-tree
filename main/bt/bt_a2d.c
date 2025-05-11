@@ -9,8 +9,10 @@
 
 
 #include "bt/a2d_sbc_constants.h"
-#include "bt/bt_bd_addr_utils.h"
-#include "bt/bt_utilities.h"
+
+#include "bt/utilities/bt_bd_addr_utilities.h"
+#include "bt/utilities/bt_a2d_utilities.h"
+
 #include "bt/bt_work_dispatcher.h"
 #include "bt/i2s_output.h"
 #include "bt/bt_a2d.h"

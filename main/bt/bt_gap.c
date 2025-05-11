@@ -9,8 +9,8 @@
 #include <esp_gap_bt_api.h>
 
 
-#include "bt/bt_utilities.h"
-#include "bt/bt_bd_addr_utils.h"
+#include "bt/utilities/bt_bd_addr_utilities.h"
+#include "bt/utilities/bt_gap_utilities.h"
 #include "bt/bt_gap.h"
 
 

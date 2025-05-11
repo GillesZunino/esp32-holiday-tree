@@ -7,8 +7,8 @@
 #include <esp_check.h>
 #include <esp_log.h>
 
-#include "bt/bt_utilities.h"
-#include "bt/bt_bd_addr_utils.h"
+#include "bt/utilities/bt_bd_addr_utilities.h"
+
 #include "bt/bt_device_preferences.h"
 #include "bt/bt_device_manager.h"
 #include "bt/bt_avrc_volume.h"

@@ -7,12 +7,12 @@
 #include <esp_log.h>
 #include <esp_avrc_api.h>
 
+#include "bt/utilities/bt_bd_addr_utilities.h"
+#include "bt/utilities/bt_avrc_utilities.h"
 
 #include "bt/bt_device_manager.h"
 #include "bt/bt_work_dispatcher.h"
 #include "bt/bt_avrc_volume.h"
-#include "bt/bt_bd_addr_utils.h"
-#include "bt/bt_utilities.h"
 #include "bt/i2s_output.h"
 #include "bt/bt_avrc_target.h"
 

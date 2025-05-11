@@ -3,8 +3,6 @@ set(srcs
         "button/button_init.c"
 
         "bt/bt_init.c"
-        "bt/bt_utilities.c"
-        "bt/bt_bd_addr_utils.c"
         "bt/bt_work_dispatcher.c"
         "bt/bt_gap.c"
         "bt/bt_avrc.c"
@@ -17,6 +15,11 @@ set(srcs
 
         "bt/bt_device_manager.c"
         "bt/bt_device_preferences.c"
+
+        "bt/utilities/bt_bd_addr_utilities.c"
+        "bt/utilities/bt_gap_utilities.c"
+        "bt/utilities/bt_avrc_utilities.c"
+        "bt/utilities/bt_a2d_utilities.c"
 
         "configuration/nvs_configuration.c"
 

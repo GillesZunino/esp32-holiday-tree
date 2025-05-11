@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "bt/bt_bd_addr_utils.h"
+#include "bt/utilities/bt_bd_addr_utilities.h"
 
 
 bool is_null_bda(const uint8_t* const bda) {
