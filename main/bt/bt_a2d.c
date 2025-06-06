@@ -225,7 +225,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
                     ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %d | max bit pool %d", params->audio_cfg.mcc.cie.sbc[2], params->audio_cfg.mcc.cie.sbc[3]);
 #endif
 
-                    // Configure I2S output with the paramters extracted from the codec configuration - SBC is always 16 bits data
+                    // Configure I2S output with the parameters extracted from the codec configuration - SBC is always 16 bits data
                     esp_err_t err = configure_i2s_output(sampleFrequency, I2S_DATA_BIT_WIDTH_16BIT, channelCount);
                     if (err != ESP_OK) {
                         char err_msg[64];

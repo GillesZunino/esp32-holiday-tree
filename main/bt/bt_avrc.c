@@ -27,19 +27,19 @@ esp_err_t setup_avrc_profile() {
     // In AVRC parlance, there are two roles: Controller (CT) and Target (TG):
     //
     // * Controller is typically a remote control which can ask the target to perform operations like play, pause ...
-    //   Hadphones can also be a Controller if they have built in buttons for next, previous, skip ...
+    //   Headphones can also be a Controller if they have built in buttons for next, previous, skip ...
     // * Target is the device being controlled, for instance a media player, a tuner...
     // 
     // When AVRC is used in collaboration with A2DP, the roles are typically as follows:
     // * A2DP Source (Phone, Computer ...) encodes audio and sends it to ...
     // * A2DP Sink (Headphone, Wireless speaker ...) decodes audio and plays it
     //
-    // WHen A2DP and AVRC are used toegether, roles are typically assigned as follows:
+    // When A2DP and AVRC are used together, roles are typically assigned as follows:
     // * AVRC CT is typically associated with A2DP source
     // * AVRC TG is typically associated with A2DP sink
     //
     //
-    // The following summerizes various common arrangements:
+    // The following summarizes various common arrangements:
     //
     //  * A2DP Source | AVRC Controller  -> A2DP Sink | AVRC Target:
     //      A Phone, Computer ... produces Audio and sends it to a wireless speaker with a single volume button
@@ -52,7 +52,7 @@ esp_err_t setup_avrc_profile() {
     //
     // !This code uses the "A2DP Source | AVRC Controller -> A2DP Sink | AVRC Target | AVRC Controller" approach
     // This is mostly because we would like to get metadata about the track playing and AVRC TG does not allow metadata exchange
-    // To receive metadata, the Holiday Tree needs to be an AVRC Controller and subscribe for target notificaitons
+    // To receive metadata, the Holiday Tree needs to be an AVRC Controller and subscribe for target notifications
     //
 
     // Ensure output volume is set to default
