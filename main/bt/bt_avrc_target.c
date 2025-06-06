@@ -98,7 +98,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
 #endif
             switch (eventId) {
                 case ESP_AVRC_RN_VOLUME_CHANGE: {
-                    // Respond to the controller with 'INTERIM' - See paragragh 29.19 of AVRC 1.6.1 specification ...
+                    // Respond to the controller with 'INTERIM' - See paragraph 29.19 of AVRC 1.6.1 specification ...
                     esp_avrc_rn_param_t rnParam = { .volume = get_volume_avrc() };
 
 #if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG

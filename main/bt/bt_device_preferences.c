@@ -13,7 +13,7 @@
 #include "bt/bt_device_preferences.h"
 
 
-// Wrap the effective configuration with the version number to faciliate build to build upgrades
+// Wrap the effective configuration with the version number to facilitate build to build upgrades
 typedef struct bt_device_configuration_blob {
     uint16_t version;
     bt_device_configuration_t configuration;

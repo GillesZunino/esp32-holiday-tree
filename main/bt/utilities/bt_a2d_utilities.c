@@ -134,7 +134,7 @@ const char* get_a2d_sbc_allocation_mode(uint8_t allocationMode) {
         case A2D_SBC_IE_ALLOC_MD_S:
             return "A2D_SBC_IE_ALLOC_MD_S (SNR)";
         case A2D_SBC_IE_ALLOC_MD_L:
-            return "A2D_SBC_IE_ALLOC_MD_L (loundess)";
+            return "A2D_SBC_IE_ALLOC_MD_L (loudness)";
         default:
             return "N/A";
     }

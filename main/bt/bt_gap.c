@@ -110,7 +110,7 @@ static void bt_gap_callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t* 
         case ESP_BT_GAP_ENC_CHG_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_GAP_LOG
             char bdaStr[18];
-            ESP_LOGI(BtGapTag, "ESP_BT_GAP_ENC_CHG_EVT encryption mode to [%s] changed to %s", get_bda_string(params->enc_chg.bda, bdaStr), get_gap_encryption_mode(params->enc_chg.enc_mode));
+            ESP_LOGI(BtGapTag, "ESP_BT_GAP_ENC_CHG_EVT encryption mode to [%s] changed to %s", get_bda_string(params->enc_chg.bda, bdaStr), get_gap_encryption_mode_name(params->enc_chg.enc_mode));
 #endif
         }
         break;
