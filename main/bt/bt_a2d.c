@@ -31,7 +31,7 @@ static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* par
 static void a2d_data_sink_callback(const uint8_t* data, uint32_t len);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-static void log_icoming_a2d_data_stats(uint32_t len);
+static void log_incoming_a2d_data_stats(uint32_t len);
 static void reset_incoming_a2d_data_stats(const esp_a2d_cb_param_t* const params);
 #endif
 
@@ -70,7 +70,7 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len) {
     }
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-    log_icoming_a2d_data_stats(len);
+    log_incoming_a2d_data_stats(len);
 #endif
 }
 
@@ -84,7 +84,7 @@ static uint32_t s_audio_average_packet_size = 0;
 static uint64_t s_audio_total_bytes_received = 0;
 
 
-static void log_icoming_a2d_data_stats(uint32_t len) {
+static void log_incoming_a2d_data_stats(uint32_t len) {
     s_audio_packets_count++;
     
     s_audio_total_bytes_received += len;
