@@ -15,7 +15,7 @@
 
 
 // Bluetooth device manager log tags
-static const char* BtDeviceManagertTag = "bt_device_mgr";
+static const char* BtDeviceManagerTag = "bt_device_mgr";
 
 
 // BDA of the currently connected device, if any
@@ -63,7 +63,7 @@ esp_err_t bt_device_manager_device_disconnected(const struct avrc_tg_conn_stat_p
 
     esp_err_t err = save_device_configuration(s_remote_bda, &configuration);
     if (err != ESP_OK) {
-        ESP_LOGE(BtDeviceManagertTag, "[TG] save_device_configuration() failed with %d", err);
+        ESP_LOGE(BtDeviceManagerTag, "[TG] save_device_configuration() failed with %d", err);
     }
 
     // Clear address of the remote device on disconnect
@@ -80,12 +80,12 @@ static esp_err_t load_device_configuration(const esp_bd_addr_t bda, bt_device_co
         char str[18];
         get_bda_string(bda, str);
         if (err == ESP_OK) {
-            ESP_LOGI(BtDeviceManagertTag, "[TG] load_device_configuration() - Loaded saved configuration for device [%s]", str);
+            ESP_LOGI(BtDeviceManagerTag, "[TG] load_device_configuration() - Loaded saved configuration for device [%s]", str);
         } else {
-            ESP_LOGW(BtDeviceManagertTag, "[TG] load_device_configuration() - Could not find configuration for [%s]", str);
+            ESP_LOGW(BtDeviceManagerTag, "[TG] load_device_configuration() - Could not find configuration for [%s]", str);
         }
     } else {
-        ESP_LOGW(BtDeviceManagertTag, "[TG] load_device_configuration() - Could not find configuration - BDA is null");
+        ESP_LOGW(BtDeviceManagerTag, "[TG] load_device_configuration() - Could not find configuration - BDA is null");
 #endif
     }
 
@@ -100,13 +100,13 @@ static esp_err_t save_device_configuration(const esp_bd_addr_t bda, const bt_dev
         char str[18];
         get_bda_string(bda, str);
         if (err == ESP_OK) {
-            ESP_LOGI(BtDeviceManagertTag, "[TG] save_device_configuration() - Saved configuration for device [%s]", str);
+            ESP_LOGI(BtDeviceManagerTag, "[TG] save_device_configuration() - Saved configuration for device [%s]", str);
         }
         else {
-            ESP_LOGW(BtDeviceManagertTag, "[TG] save_device_configuration() - Failed to save for device [%s] with error %d", str, err);
+            ESP_LOGW(BtDeviceManagerTag, "[TG] save_device_configuration() - Failed to save for device [%s] with error %d", str, err);
         }
     } else {
-        ESP_LOGW(BtDeviceManagertTag, "[TG] save_device_configuration() - BDA is null, not saving configuration");
+        ESP_LOGW(BtDeviceManagerTag, "[TG] save_device_configuration() - BDA is null, not saving configuration");
 #endif
     }
 
@@ -129,8 +129,8 @@ static void log_device_configuration(const char* const message, const esp_bd_add
     char str[18];
     get_bda_string(bda, str);
 
-    ESP_LOGI(BtDeviceManagertTag, "[TG] Device [%s] -> %s", str, message);
-    ESP_LOGI(BtDeviceManagertTag, "\t Volume (AVRC): %d", configuration->volume);
+    ESP_LOGI(BtDeviceManagerTag, "[TG] Device [%s] -> %s", str, message);
+    ESP_LOGI(BtDeviceManagerTag, "\t Volume (AVRC): %d", configuration->volume);
 }
 
 #endif
