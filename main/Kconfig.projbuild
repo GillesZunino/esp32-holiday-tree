@@ -85,9 +85,9 @@ menu "Holiday Tree"
             Emit detailed logging about I2S processing
 
     config  HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-        bool "Log I2S data processing"
+        bool "Log in-depth I2S data processing"
         default HOLIDAYTREE_HARDWARE_DEVELOPMENT = n
         help
-            Emit detailed logging about I2S data processing including ring buffer depth, rate of A2DP data ...
+            Emit in-depth logging about I2S data processing including ring buffer depth, rate of A2DP data ...
 
 endmenu
