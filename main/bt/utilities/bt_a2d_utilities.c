@@ -4,7 +4,6 @@
 
 #include <string.h>
 
-#include "bt/a2d_sbc_constants.h"
 #include "bt/utilities/bt_a2d_utilities.h"
 
 
@@ -75,14 +74,14 @@ char** get_a2d_media_codec_names(esp_a2d_mct_t codecType, char* codecNames[5]) {
 
 const char* get_a2d_sbc_sample_frequency_name(uint8_t sampleFrequency) {
     switch (sampleFrequency) {
-        case A2D_SBC_IE_SAMP_FREQ_16:
-            return "A2D_SBC_IE_SAMP_FREQ_16";
-        case A2D_SBC_IE_SAMP_FREQ_32:
-            return "A2D_SBC_IE_SAMP_FREQ_32";
-        case A2D_SBC_IE_SAMP_FREQ_44:
-            return "A2D_SBC_IE_SAMP_FREQ_44";
-        case A2D_SBC_IE_SAMP_FREQ_48:
-            return "A2D_SBC_IE_SAMP_FREQ_48";
+        case ESP_A2D_SBC_CIE_SF_16K:
+            return "ESP_A2D_SBC_CIE_SF_16K";
+        case ESP_A2D_SBC_CIE_SF_32K:
+            return "ESP_A2D_SBC_CIE_SF_32K";
+        case ESP_A2D_SBC_CIE_SF_44K:
+            return "ESP_A2D_SBC_CIE_SF_44K";
+        case ESP_A2D_SBC_CIE_SF_48K:
+            return "ESP_A2D_SBC_CIE_SF_48K";
         default:
             return "N/A";
     }
@@ -90,14 +89,14 @@ const char* get_a2d_sbc_sample_frequency_name(uint8_t sampleFrequency) {
 
 const char* get_a2d_sbc_channel_mode_name(uint8_t channelMode) {
     switch (channelMode){
-        case A2D_SBC_IE_CH_MD_MONO:
-            return "A2D_SBC_IE_CH_MD_MONO";
-        case A2D_SBC_IE_CH_MD_DUAL:
-            return "A2D_SBC_IE_CH_MD_DUAL";
-        case A2D_SBC_IE_CH_MD_STEREO:
-            return "A2D_SBC_IE_CH_MD_STEREO";
-        case A2D_SBC_IE_CH_MD_JOINT:
-            return "A2D_SBC_IE_CH_MD_JOINT";
+        case ESP_A2D_SBC_CIE_CH_MODE_MONO:
+            return "ESP_A2D_SBC_CIE_CH_MODE_MONO";
+        case ESP_A2D_SBC_CIE_CH_MODE_DUAL_CHANNEL:
+            return "ESP_A2D_SBC_CIE_CH_MODE_DUAL_CHANNEL";
+        case ESP_A2D_SBC_CIE_CH_MODE_STEREO:
+            return "ESP_A2D_SBC_CIE_CH_MODE_STEREO";
+        case ESP_A2D_SBC_CIE_CH_MODE_JOINT_STEREO:
+            return "ESP_A2D_SBC_CIE_CH_MODE_JOINT_STEREO";
         default:
             return "N/A";
     }
@@ -105,14 +104,14 @@ const char* get_a2d_sbc_channel_mode_name(uint8_t channelMode) {
 
 const char* get_a2d_sbc_block_count_name(uint8_t blockCount) {
     switch (blockCount) {
-        case A2D_SBC_IE_BLOCKS_4:
-            return "A2D_SBC_IE_BLOCKS_4";
-        case A2D_SBC_IE_BLOCKS_8:
-            return "A2D_SBC_IE_BLOCKS_8";
-        case A2D_SBC_IE_BLOCKS_12:
-            return "A2D_SBC_IE_BLOCKS_12";
-        case A2D_SBC_IE_BLOCKS_16:
-            return "A2D_SBC_IE_BLOCKS_16";
+        case ESP_A2D_SBC_CIE_BLOCK_LEN_4:
+            return "ESP_A2D_SBC_CIE_BLOCK_LEN_4";
+        case ESP_A2D_SBC_CIE_BLOCK_LEN_8:
+            return "ESP_A2D_SBC_CIE_BLOCK_LEN_8";
+        case ESP_A2D_SBC_CIE_BLOCK_LEN_12:
+            return "ESP_A2D_SBC_CIE_BLOCK_LEN_12";
+        case ESP_A2D_SBC_CIE_BLOCK_LEN_16:
+            return "ESP_A2D_SBC_CIE_BLOCK_LEN_16";
         default:
             return "N/A";
     }
@@ -120,10 +119,10 @@ const char* get_a2d_sbc_block_count_name(uint8_t blockCount) {
 
 const char* get_a2d_sbc_subbands_name(uint8_t subBands) {
     switch (subBands) {
-        case A2D_SBC_IE_SUBBAND_4:
-            return "A2D_SBC_IE_SUBBAND_4";
-        case A2D_SBC_IE_SUBBAND_8:
-            return "A2D_SBC_IE_SUBBAND_8";
+        case ESP_A2D_SBC_CIE_NUM_SUBBANDS_4:
+            return "ESP_A2D_SBC_CIE_NUM_SUBBANDS_4";
+        case ESP_A2D_SBC_CIE_NUM_SUBBANDS_8:
+            return "ESP_A2D_SBC_CIE_NUM_SUBBANDS_8";
         default:
             return "N/A";
     }
@@ -131,10 +130,10 @@ const char* get_a2d_sbc_subbands_name(uint8_t subBands) {
 
 const char* get_a2d_sbc_allocation_mode(uint8_t allocationMode) {
     switch (allocationMode) {
-        case A2D_SBC_IE_ALLOC_MD_S:
-            return "A2D_SBC_IE_ALLOC_MD_S (SNR)";
-        case A2D_SBC_IE_ALLOC_MD_L:
-            return "A2D_SBC_IE_ALLOC_MD_L (loudness)";
+        case ESP_A2D_SBC_CIE_ALLOC_MTHD_SRN:
+            return "ESP_A2D_SBC_CIE_ALLOC_MTHD_SRN (SRN)";
+        case ESP_A2D_SBC_CIE_ALLOC_MTHD_LOUDNESS:
+            return "ESP_A2D_SBC_CIE_ALLOC_MTHD_LOUDNESS (Loudness)";
         default:
             return "N/A";
     }

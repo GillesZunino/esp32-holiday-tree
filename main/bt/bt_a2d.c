@@ -8,8 +8,6 @@
 #include <esp_a2dp_api.h>
 
 
-#include "bt/a2d_sbc_constants.h"
-
 #include "bt/utilities/bt_bd_addr_utilities.h"
 #include "bt/utilities/bt_a2d_utilities.h"
 
@@ -190,39 +188,34 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
             switch (params->audio_cfg.mcc.type) {
                 case ESP_A2D_MCT_SBC: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-                    ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT - SBC codec configuration 0x%x-0x%x-0x%x-0x%x",
-                        params->audio_cfg.mcc.cie.sbc[0],
-                        params->audio_cfg.mcc.cie.sbc[1],
-                        params->audio_cfg.mcc.cie.sbc[2],
-                        params->audio_cfg.mcc.cie.sbc[3]);
+                    ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT - SBC codec configuration");
 #endif
-
                     // Sample frequency
-                    uint8_t samplingFrequencyBits = params->audio_cfg.mcc.cie.sbc[0] & A2D_SBC_IE_SAMP_FREQ_MSK;
+                    uint8_t samplingFrequencyBits = params->audio_cfg.mcc.cie.sbc_info.samp_freq;
                     uint32_t sampleFrequency = get_sample_frequency(samplingFrequencyBits);
 
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
                     ESP_LOGI(BtA2dTag, "\tSample frequency %s (%lu)", get_a2d_sbc_sample_frequency_name(samplingFrequencyBits), sampleFrequency);
 #endif
 
-                    // Channel mode
-                    uint8_t channelModeBits = params->audio_cfg.mcc.cie.sbc[0] & A2D_SBC_IE_CH_MD_MSK;
+                    // Channel mode / Channelcount
+                    uint8_t channelModeBits = params->audio_cfg.mcc.cie.sbc_info.ch_mode;
                     uint8_t channelCount = get_channel_count(channelModeBits);
 
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
                     ESP_LOGI(BtA2dTag, "\tChannel mode %s (0x%x) - Channel count %d", get_a2d_sbc_channel_mode_name(channelModeBits), channelModeBits, channelCount);
 
                     // Blocks and sub bands
-                    uint8_t blocksCountBits = params->audio_cfg.mcc.cie.sbc[1] & A2D_SBC_IE_BLOCKS_MSK;
-                    uint8_t subbandsBits = params->audio_cfg.mcc.cie.sbc[1] & A2D_SBC_IE_SUBBAND_MSK;
+                    uint8_t blocksCountBits = params->audio_cfg.mcc.cie.sbc_info.block_len;
+                    uint8_t subbandsBits = params->audio_cfg.mcc.cie.sbc_info.num_subbands;
                     ESP_LOGI(BtA2dTag, "\tBlocks %s (0x%x) - Sub bands %s (0x%x)", get_a2d_sbc_block_count_name(blocksCountBits), blocksCountBits, get_a2d_sbc_subbands_name(subbandsBits), subbandsBits);
 
                     // Allocation mode
-                    uint8_t allocationModeBits = params->audio_cfg.mcc.cie.sbc[1] & A2D_SBC_IE_ALLOC_MD_MSK;
+                    uint8_t allocationModeBits = params->audio_cfg.mcc.cie.sbc_info.alloc_mthd;
                     ESP_LOGI(BtA2dTag, "\tAllocation mode %s (0x%x)", get_a2d_sbc_allocation_mode(allocationModeBits), allocationModeBits);
 
                     // Min and max bit pool
-                    ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %d | max bit pool %d", params->audio_cfg.mcc.cie.sbc[2], params->audio_cfg.mcc.cie.sbc[3]);
+                    ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %d | max bit pool %d", params->audio_cfg.mcc.cie.sbc_info.min_bitpool, params->audio_cfg.mcc.cie.sbc_info.max_bitpool);
 #endif
 
                     // Configure I2S output with the parameters extracted from the codec configuration - SBC is always 16 bits data
@@ -295,13 +288,13 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 
 static uint32_t get_sample_frequency(uint8_t sampleFrequency) {
     switch (sampleFrequency) {
-        case A2D_SBC_IE_SAMP_FREQ_16:
+        case ESP_A2D_SBC_CIE_SF_16K:
             return 16000;
-        case A2D_SBC_IE_SAMP_FREQ_32:
+        case ESP_A2D_SBC_CIE_SF_32K:
             return 32000;
-        case A2D_SBC_IE_SAMP_FREQ_44:
+        case ESP_A2D_SBC_CIE_SF_44K:
             return 44100;
-        case A2D_SBC_IE_SAMP_FREQ_48:
+        case ESP_A2D_SBC_CIE_SF_48K:
             return 48000;
         default:
             return 0;
@@ -310,11 +303,11 @@ static uint32_t get_sample_frequency(uint8_t sampleFrequency) {
 
 static uint8_t get_channel_count(uint8_t channelModeBits) {
     switch (channelModeBits) {
-        case A2D_SBC_IE_CH_MD_MONO:
+        case ESP_A2D_SBC_CIE_CH_MODE_MONO:
             return 1;
-        case A2D_SBC_IE_CH_MD_DUAL:
-        case A2D_SBC_IE_CH_MD_STEREO:
-        case A2D_SBC_IE_CH_MD_JOINT:
+        case ESP_A2D_SBC_CIE_CH_MODE_DUAL_CHANNEL:
+        case ESP_A2D_SBC_CIE_CH_MODE_STEREO:
+        case ESP_A2D_SBC_CIE_CH_MODE_JOINT_STEREO:
             return 2;
         default:
             return 0;
