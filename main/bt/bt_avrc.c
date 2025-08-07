@@ -58,17 +58,17 @@ esp_err_t setup_avrc_profile() {
     // Ensure output volume is set to default
     set_volume_avrc(get_default_volume_avrc());
 
-    // Initialize AVRC Controller module
-    ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BtAvrcTag, "esp_avrc_ct_init() failed");
-
     // Register AVRC Controller callback
     ESP_RETURN_ON_ERROR(esp_avrc_ct_register_callback(avrc_controller_callback), BtAvrcTag, "esp_avrc_ct_register_callback() failed");
 
-    // Initialize AVRC Target module
-    ESP_RETURN_ON_ERROR(esp_avrc_tg_init(), BtAvrcTag, "esp_avrc_tg_init() failed");
+    // Initialize AVRC Controller module
+    ESP_RETURN_ON_ERROR(esp_avrc_ct_init(), BtAvrcTag, "esp_avrc_ct_init() failed");
 
     // Register AVRC Target callback
     ESP_RETURN_ON_ERROR(esp_avrc_tg_register_callback(avrc_target_callback), BtAvrcTag, "esp_avrc_tg_register_callback() failed");
+
+    // Initialize AVRC Target module
+    ESP_RETURN_ON_ERROR(esp_avrc_tg_init(), BtAvrcTag, "esp_avrc_tg_init() failed");
 
     // Register Target notification capabilities so the controller can request information from this device
     ESP_RETURN_ON_ERROR(register_target_notifications_capabilities(), BtAvrcTag, "register_target_notifications_capabilities() failed");
