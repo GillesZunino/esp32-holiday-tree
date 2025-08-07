@@ -40,14 +40,14 @@ static uint8_t get_channel_count(uint8_t channelModeBits);
 
 
 esp_err_t setup_a2d_profile() {
-    // Initialize Advanced Audio
-    ESP_RETURN_ON_ERROR(esp_a2d_sink_init(), BtA2dTag, "esp_a2d_sink_init() failed");
-
     // Register A2D command and status callback
     ESP_RETURN_ON_ERROR(esp_a2d_register_callback(&a2d_event_callback), BtA2dTag, "esp_a2d_register_callback() failed");
 
     // Register A2D data callback
     ESP_RETURN_ON_ERROR(esp_a2d_sink_register_data_callback(a2d_data_sink_callback), BtA2dTag, "esp_a2d_sink_register_data_callback() failed");
+
+    // Initialize Advanced Audio
+    ESP_RETURN_ON_ERROR(esp_a2d_sink_init(), BtA2dTag, "esp_a2d_sink_init() failed");
 
     // Get the default delay - The response comes through the callback
     ESP_RETURN_ON_ERROR(esp_a2d_sink_get_delay_value(), BtA2dTag, "esp_a2d_sink_get_delay_value()");
