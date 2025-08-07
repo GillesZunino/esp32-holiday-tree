@@ -176,6 +176,13 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
         }
         break;
 
+        case ESP_AVRC_CT_PROF_STATE_EVT: {
+#if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_PROF_STATE_EVT avrc_ct_init_stat.state '%s'", get_avrc_init_state_name(params->avrc_ct_init_stat.state));
+#endif     
+        }
+        break;
+
         default:
             ESP_LOGW(BtAvrcControllerTag, "%s() [CT] received unknown event: %d", __func__, event);
             break;

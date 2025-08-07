@@ -118,6 +118,13 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
         }
         break;
 
+        case ESP_AVRC_TG_PROF_STATE_EVT : {
+#if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
+            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_PROF_STATE_EVT avrc_tg_init_stat.state '%s'", get_avrc_init_state_name(params->avrc_tg_init_stat.state));
+#endif
+        }
+        break;
+
         default: {
             ESP_LOGW(BtAvrcTargetTag, "%s() [TG] unhandled event: %d", __func__, event);
         }

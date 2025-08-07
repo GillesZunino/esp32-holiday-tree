@@ -207,3 +207,22 @@ char** get_avrc_target_feature_flags(uint16_t featureFlags, char* featuresStr[6]
 
     return featuresStr;
 }
+
+const char* get_avrc_init_state_name(esp_avrc_init_state_t initState) {
+    switch (initState) {
+        case ESP_AVRC_INIT_SUCCESS :
+            return "ESP_AVRC_INIT_SUCCESS";
+        case ESP_AVRC_INIT_ALREADY:
+            return "ESP_AVRC_INIT_ALREADY";
+        case ESP_AVRC_INIT_FAIL:
+            return "ESP_AVRC_INIT_FAIL";
+        case ESP_AVRC_DEINIT_SUCCESS:
+            return "ESP_AVRC_DEINIT_SUCCESS";
+        case ESP_AVRC_DEINIT_ALREADY:
+            return "ESP_AVRC_DEINIT_ALREADY";
+            case ESP_AVRC_DEINIT_FAIL:
+            return "ESP_AVRC_DEINIT_FAIL";
+        default:
+            return "N/A";
+    }
+}

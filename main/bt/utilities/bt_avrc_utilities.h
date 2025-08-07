@@ -14,3 +14,4 @@ const char* get_avrc_battery_stat_name(esp_avrc_batt_stat_t batteryStat);
 char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]);
 char** get_avrc_controller_feature_flags(uint16_t featureFlags, char* featuresStr[8]);
 char** get_avrc_target_feature_flags(uint16_t featureFlags, char* featuresStr[6]);
+const char* get_avrc_init_state_name(esp_avrc_init_state_t initState);
