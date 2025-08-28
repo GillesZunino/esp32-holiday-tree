@@ -1,14 +1,15 @@
 {
-  "debug": {
+  "devboard (debug)": {
     "build": {
       "compileArgs": [],
       "ninjaArgs": [],
-      "buildDirectoryPath": "${workspaceFolder}/build-debug",
+      "buildDirectoryPath": "${workspaceFolder}/build-devboard-debug",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.debug"
+        "sdkconfig.debug",
+        "sdkconfig.devboard"
       ],
-      "sdkconfigFilePath": "${workspaceFolder}/build-debug/sdkconfig"
+      "sdkconfigFilePath": "${workspaceFolder}/build-devboard-debug/sdkconfig"
     },
     "env": {},
     "flashBaudRate": "",
@@ -25,16 +26,17 @@
       "postFlash": ""
     }
   },
-  "release": {
+  "devboard (release)": {
     "build": {
       "compileArgs": [],
       "ninjaArgs": [],
-      "buildDirectoryPath": "${workspaceFolder}/build-release",
+      "buildDirectoryPath": "${workspaceFolder}/build-devboard-release",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.release"
+        "sdkconfig.release",
+        "sdkconfig.devboard"
       ],
-      "sdkconfigFilePath": "${workspaceFolder}/build-release/sdkconfig"
+      "sdkconfigFilePath": "${workspaceFolder}/build-devboard-release/sdkconfig"
     },
     "env": {},
     "flashBaudRate": "",
@@ -51,16 +53,44 @@
       "postFlash": ""
     }
   },
-  "smartbutton": {
+  "smartbutton (debug)": {
     "build": {
       "compileArgs": [],
       "ninjaArgs": [],
-      "buildDirectoryPath": "${workspaceFolder}/build-smartbutton",
+      "buildDirectoryPath": "${workspaceFolder}/build-smartbutton-debug",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
+        "sdkconfig.debug",
         "sdkconfig.smartbutton"
       ],
-      "sdkconfigFilePath": "${workspaceFolder}/build-smartbutton/sdkconfig"
+      "sdkconfigFilePath": "${workspaceFolder}/build-smartbutton-debug/sdkconfig"
+    },
+    "env": {},
+    "flashBaudRate": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": 0,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
+  },
+    "smartbutton (release)": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "${workspaceFolder}/build-smartbutton-release",
+      "sdkconfigDefaults": [
+        "sdkconfig.defaults",
+        "sdkconfig.release",
+        "sdkconfig.smartbutton"
+      ],
+      "sdkconfigFilePath": "${workspaceFolder}/build-smartbutton-release/sdkconfig"
     },
     "env": {},
     "flashBaudRate": "",

@@ -2,6 +2,6 @@
 # Copyright 2024, Gilles Zunino
 # -----------------------------------------------------------------------------------
 
-# Target production board (Smartbutton)
-CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION=y
-CONFIG_HOLIDAYTREE_HARDWARE_DEVELOPMENT=
+# Target development board (devboard)
+CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION=
+CONFIG_HOLIDAYTREE_HARDWARE_DEVELOPMENT=y

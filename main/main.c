@@ -27,9 +27,12 @@
 
 
 //
-// We assign different GPIO pins to various peripherals in development versus production:
+// We assign different GPIO pins to various peripherals for development boards versus production boards:
 //  * [Real Device]
-//      * Momentary button on IO15 which is also JTAG TDO and a strapping pin
+//      * Momentary button on:
+//          -> IO15 which is also JTAG TDO and a strapping pin
+//          * -> IO21 (no specific default assignment)
+//          -> IO33 which is also ADC1-CH5
 //      * WS2812 LED data on IO5 which is also a strapping pin
 //  * [Development]
 //      * Momentary button on IO23 which has no conflict and allows JTAG use
@@ -37,7 +40,7 @@
 //
 #if CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION
     // Momentary button GPIO
-    const gpio_num_t ButtonGPIONum = GPIO_NUM_15;
+    const gpio_num_t ButtonGPIONum = GPIO_NUM_21;
 
     // Individually addressable LEDs data GPIO
     const gpio_num_t LedDataGPIONum = GPIO_NUM_5;
