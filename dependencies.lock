@@ -1,6 +1,7 @@
 dependencies:
   espressif/led_strip:
-    component_hash: f907c58f722c58ab8545366668cfd8769cefb7d97a631a14e9d16234cc72bdff
+    component_hash: 
+      f907c58f722c58ab8545366668cfd8769cefb7d97a631a14e9d16234cc72bdff
     dependencies:
     - name: idf
       require: private
@@ -12,7 +13,7 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.5.1
+    version: 5.5.2
 direct_dependencies:
 - espressif/led_strip
 manifest_hash: a2d09a4a3fe6d01d96ff8cb93a3243e9bcac85af87810c45468a70a70c5243c9
