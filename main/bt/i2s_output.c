@@ -569,7 +569,7 @@ static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
         for (size_t dataIndex = 0; dataIndex < len / bytePerSample; dataIndex++) {
             int32_t pcmDataWithVolume = (int32_t) lroundf((int16_t) incomingData[dataIndex] * volume_factor);
             
-            // TODO: We currently only support I2S_DATA_BIT_WIDTH_16BIT or 2 bytes per channel
+            // Clamp the result to [INT16_MIN, INT16_MAX] so we do not exceed the valid PCM range
             if (pcmDataWithVolume > INT16_MAX) {
                 pcmDataWithVolume = INT16_MAX;
             } else if (pcmDataWithVolume < INT16_MIN) {
