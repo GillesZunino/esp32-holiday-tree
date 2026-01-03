@@ -556,15 +556,28 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
 }
 
 static void apply_volume(void* data, size_t len, uint8_t bytePerSample) {
-    const float volumeFactor = get_volume_factor();
+    const uint8_t volume_avrc = get_volume_avrc();
+    const float volume_factor = get_volume_factor();
 
     // TODO: We currently only support I2S_DATA_BIT_WIDTH_16BIT or 2 bytes per channel
     uint16_t* incomingData = (uint16_t*) data;
-    for (size_t dataIndex = 0; dataIndex < len / bytePerSample; dataIndex++) {
-        int16_t pcmData = incomingData[dataIndex];
-        int32_t pcmDataWithVolume = (int32_t) roundf(pcmData * volumeFactor);
-        uint16_t truncatedPcmDataWithVolume = pcmDataWithVolume;
-        incomingData[dataIndex] = truncatedPcmDataWithVolume;
+
+    // Optimization: When volume is 0, we can just zero the buffer otherwise apply the desired factor to each sample
+    if (volume_avrc == 0) {
+        memset(data, 0, len);
+    } else {
+        for (size_t dataIndex = 0; dataIndex < len / bytePerSample; dataIndex++) {
+            int32_t pcmDataWithVolume = (int32_t) lroundf((int16_t) incomingData[dataIndex] * volume_factor);
+            
+            // TODO: We currently only support I2S_DATA_BIT_WIDTH_16BIT or 2 bytes per channel
+            if (pcmDataWithVolume > INT16_MAX) {
+                pcmDataWithVolume = INT16_MAX;
+            } else if (pcmDataWithVolume < INT16_MIN) {
+                pcmDataWithVolume = INT16_MIN;
+            }
+
+            incomingData[dataIndex] = (uint16_t) pcmDataWithVolume;
+        }
     }
 }
 
