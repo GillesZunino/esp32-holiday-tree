@@ -377,8 +377,8 @@ static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEs
     uint64_t thisCallTime = endEspTime - startEspTime;
 
     // Total call duration across all calls
-    static uint64_t totallCallTime = 0;
-    totallCallTime += thisCallTime;
+    static uint64_t totalCallTime = 0;
+    totalCallTime += thisCallTime;
 
     // Minimum and maximum
     static uint64_t minTimePerCall = UINT64_MAX;
@@ -390,7 +390,7 @@ static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEs
     if (numberOfCalls % 100 == 0) {
         // Current call time in FreeRTOS ticks and average time per call
         uint32_t thisCallTimeTicks = pdMS_TO_TICKS(thisCallTime / 1000);
-        uint64_t averageTimePerCall = totallCallTime / numberOfCalls;
+        uint64_t averageTimePerCall = totalCallTime / numberOfCalls;
 
         ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] %s | Stats - This call: %llu us (%lu Ticks) - Average: %llu us - Min: %llu us - Max: %llu us", operationName, thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
     }
@@ -536,7 +536,7 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
                 }
             }
 
-            // Data has been acquired and is a multipe of audio samples - Apply processing and write to ISS
+            // Data has been acquired and is a multiple of audio samples - Apply processing and write to I2S
             if (err == ESP_OK) {
                 apply_volume(s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
 

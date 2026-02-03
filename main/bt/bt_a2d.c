@@ -252,7 +252,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_PSC_CFG_EVT %s (0x%02x)", get_a2d_protocol_service_capabilities_name(params->a2d_psc_cfg_stat.psc_mask), params->a2d_psc_cfg_stat.psc_mask);
             bool delayReportingSupported = (params->a2d_psc_cfg_stat.psc_mask & ESP_A2D_PSC_DELAY_RPT) == ESP_A2D_PSC_DELAY_RPT;
-            ESP_LOGI(BtA2dTag, "\tDelay reporting %s", delayReportingSupported ? "supported" : "UNsupported");
+            ESP_LOGI(BtA2dTag, "\tDelay reporting %s", delayReportingSupported ? "supported" : "NOT supported");
 #endif
         }
         break;

@@ -7,7 +7,7 @@
 #include <esp_avrc_api.h>
 
 
-const char* get_avrc_metdata_attribute_name(uint8_t attributeId);
+const char* get_avrc_metadata_attribute_name(uint8_t attributeId);
 const char* get_avrc_notification_name(uint8_t eventId);
 const char* get_avrc_playback_stat_name(esp_avrc_playback_stat_t playbackStat);
 const char* get_avrc_battery_stat_name(esp_avrc_batt_stat_t batteryStat);

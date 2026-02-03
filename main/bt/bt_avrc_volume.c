@@ -95,7 +95,7 @@ float get_volume_factor() {
 
 [[maybe_unused]] static float get_dB_volume(uint8_t volumeAvrc) {
     const float MinVolumeDb = -25.0f;  // Quiet end (mute-ish)
-    const float MaxVolumeDb = 0.5f;    // Sightly above Unity gain (0dB) at max step
+    const float MaxVolumeDb = 0.5f;    // Slightly above Unity gain (0dB) at max step
     if (volumeAvrc == 0) {
         return 0.0f;
     } else {

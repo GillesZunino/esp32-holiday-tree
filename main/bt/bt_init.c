@@ -54,7 +54,7 @@ static esp_err_t start_bluetooth() {
     // We only use Bluetooth Classic - Release memory occupied by Bluetooth Low Energy 
     ESP_RETURN_ON_ERROR(esp_bt_controller_mem_release(ESP_BT_MODE_BLE), BtAppTag, "esp_bt_controller_mem_release(ESP_BT_MODE_BLE) failed");
 
-    // Initialize Blueetooth controller
+    // Initialize Bluetooth controller
     esp_bt_controller_config_t btControllerConfig = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     ESP_RETURN_ON_ERROR(esp_bt_controller_init(&btControllerConfig), BtAppTag, "esp_bt_controller_init() failed");
 

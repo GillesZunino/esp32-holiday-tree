@@ -102,7 +102,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG            
             uint8_t attributeId = params->meta_rsp.attr_id;
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%x): '%s'", get_avrc_metdata_attribute_name(attributeId), attributeId , params->meta_rsp.attr_text);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%x): '%s'", get_avrc_metadata_attribute_name(attributeId), attributeId , params->meta_rsp.attr_text);
 #endif
             if (params->meta_rsp.attr_text != NULL) {
                 // Free memory we allocated for the metadata string

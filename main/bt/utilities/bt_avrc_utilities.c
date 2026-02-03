@@ -7,7 +7,7 @@
 
 #include "bt/utilities/bt_avrc_utilities.h"
 
-const char* get_avrc_metdata_attribute_name(uint8_t attributeId) {
+const char* get_avrc_metadata_attribute_name(uint8_t attributeId) {
     switch (attributeId) {
         case ESP_AVRC_MD_ATTR_TITLE:
             return "ESP_AVRC_MD_ATTR_TITLE";
