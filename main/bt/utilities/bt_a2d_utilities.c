@@ -160,8 +160,6 @@ const char* get_a2d_media_command_name(esp_a2d_media_ctrl_t cmd) {
             return "ESP_A2D_MEDIA_CTRL_START";
         case ESP_A2D_MEDIA_CTRL_SUSPEND:
             return "ESP_A2D_MEDIA_CTRL_SUSPEND";
-        case ESP_A2D_MEDIA_CTRL_STOP:
-            return "ESP_A2D_MEDIA_CTRL_STOP";
         default:
             return "N/A";
     }
