@@ -130,8 +130,8 @@ const char* get_a2d_sbc_subbands_name(uint8_t subBands) {
 
 const char* get_a2d_sbc_allocation_mode(uint8_t allocationMode) {
     switch (allocationMode) {
-        case ESP_A2D_SBC_CIE_ALLOC_MTHD_SRN:
-            return "ESP_A2D_SBC_CIE_ALLOC_MTHD_SRN (SRN)";
+        case ESP_A2D_SBC_CIE_ALLOC_MTHD_SNR:
+            return "ESP_A2D_SBC_CIE_ALLOC_MTHD_SNR (SNR)";
         case ESP_A2D_SBC_CIE_ALLOC_MTHD_LOUDNESS:
             return "ESP_A2D_SBC_CIE_ALLOC_MTHD_LOUDNESS (Loudness)";
         default:
