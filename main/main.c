@@ -38,20 +38,23 @@
 //      * Momentary button on IO23 which has no conflict and allows JTAG use
 //      * WS2812 LED data on IO22 which has no conflict
 //
-#if CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION
-    // Momentary button GPIO
-    const gpio_num_t ButtonGPIONum = GPIO_NUM_21;
+#if CONFIG_IDF_TARGET_ESP32
+    #if CONFIG_HOLIDAYTREE_HARDWARE_PRODUCTION
+        // Momentary button GPIO
+        const gpio_num_t ButtonGPIONum = GPIO_NUM_21;
 
-    // Individually addressable LEDs data GPIO
-    const gpio_num_t LedDataGPIONum = GPIO_NUM_5;
+        // Individually addressable LEDs data GPIO
+        const gpio_num_t LedDataGPIONum = GPIO_NUM_5;
+    #else
+        // Momentary button GPIO
+        const gpio_num_t ButtonGPIONum = GPIO_NUM_23;
+
+        // Individually addressable LEDs data GPIO
+        const gpio_num_t LedDataGPIONum = GPIO_NUM_22;
+    #endif
 #else
-    // Momentary button GPIO
-    const gpio_num_t ButtonGPIONum = GPIO_NUM_23;
-
-    // Individually addressable LEDs data GPIO
-    const gpio_num_t LedDataGPIONum = GPIO_NUM_22;
+    #error "This project currently only tagets ESP32"
 #endif
-
 
 // Individually addressable LEDs on/off switch GPIO
 const gpio_num_t LedSwitchGPIONum = GPIO_NUM_4;
