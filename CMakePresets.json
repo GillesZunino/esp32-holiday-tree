@@ -29,6 +29,21 @@
       }
     },
     {
+      "name": "QEMU xtensa (debug)",
+      "inherits": "target",
+      "binaryDir": "${sourceDir}/build-qemu-debug",
+      "cacheVariables": {
+        "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.debug;sdkconfig.devboard;sdkconfig.qemu",
+        "SDKCONFIG": "${sourceDir}/build-qemu-debug/sdkconfig"
+      },
+      "vendor": {
+        "espressif/vscode-esp-idf": {
+          "schemaVersion": 1,
+          "settings": []
+        }
+      }
+    },
+    {
       "name": "devboard (debug)",
       "inherits": "target",
       "binaryDir": "${sourceDir}/build-devboard-debug",

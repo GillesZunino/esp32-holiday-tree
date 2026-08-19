@@ -1,0 +1,7 @@
+# -----------------------------------------------------------------------------------
+# Copyright 2026, Gilles Zunino
+# -----------------------------------------------------------------------------------
+
+# QEMU requires flash size to be specified - Auto detect is not allowed
+# Forcefully configure Flash Size = 4MB to match real hardware
+CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=
