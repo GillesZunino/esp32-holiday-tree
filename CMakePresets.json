@@ -7,34 +7,12 @@
   },
   "configurePresets": [
     {
-      "name": "target",
-      "hidden": true,
-      "cacheVariables": {
-        "IDF_TARGET": "esp32"
-      },
-      "vendor": {
-        "espressif/vscode-esp-idf": {
-          "schemaVersion": 1,
-          "settings": [
-            {
-              "type": "openOCD",
-              "value": {
-                "debugLevel": 2,
-                "configs": [ "openocd/esp32-ft4232hl-to-jtag.cfg" ],
-                "args": []
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "QEMU xtensa (debug)",
-      "inherits": "target",
       "binaryDir": "${sourceDir}/build-qemu-debug",
       "cacheVariables": {
         "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.debug;sdkconfig.devboard;sdkconfig.qemu",
-        "SDKCONFIG": "${sourceDir}/build-qemu-debug/sdkconfig"
+        "SDKCONFIG": "${sourceDir}/build-qemu-debug/sdkconfig",
+        "IDF_TARGET": "esp32"
       },
       "vendor": {
         "espressif/vscode-esp-idf": {
@@ -45,11 +23,11 @@
     },
     {
       "name": "devboard (debug)",
-      "inherits": "target",
       "binaryDir": "${sourceDir}/build-devboard-debug",
       "cacheVariables": {
         "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.debug;sdkconfig.devboard",
-        "SDKCONFIG": "${sourceDir}/build-devboard-debug/sdkconfig"
+        "SDKCONFIG": "${sourceDir}/build-devboard-debug/sdkconfig",
+        "IDF_TARGET": "esp32"
       },
       "vendor": {
         "espressif/vscode-esp-idf": {
@@ -60,11 +38,11 @@
     },
     {
       "name": "devboard (release)",
-      "inherits": "target",
       "binaryDir": "${sourceDir}/build-devboard-release",
       "cacheVariables": {
         "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.release;sdkconfig.devboard",
-        "SDKCONFIG": "${sourceDir}/build-devboard-release/sdkconfig"
+        "SDKCONFIG": "${sourceDir}/build-devboard-release/sdkconfig",
+        "IDF_TARGET": "esp32"
       },
       "vendor": {
         "espressif/vscode-esp-idf": {
@@ -75,11 +53,11 @@
     },
     {
       "name": "smartbutton (debug)",
-      "inherits": "target",
       "binaryDir": "${sourceDir}/build-smartbutton-debug",
       "cacheVariables": {
         "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.debug;sdkconfig.smartbutton",
-        "SDKCONFIG": "${sourceDir}/build-smartbutton-debug/sdkconfig"
+        "SDKCONFIG": "${sourceDir}/build-smartbutton-debug/sdkconfig",
+        "IDF_TARGET": "esp32"
       },
       "vendor": {
         "espressif/vscode-esp-idf": {
@@ -90,11 +68,11 @@
     },
     {
       "name": "smartbutton (release)",
-      "inherits": "target",
       "binaryDir": "${sourceDir}/build-smartbutton-release",
       "cacheVariables": {
         "SDKCONFIG_DEFAULTS": "sdkconfig.defaults;sdkconfig.release;sdkconfig.smartbutton",
-        "SDKCONFIG": "${sourceDir}/build-smartbutton-release/sdkconfig"
+        "SDKCONFIG": "${sourceDir}/build-smartbutton-release/sdkconfig",
+        "IDF_TARGET": "esp32"
       },
       "vendor": {
         "espressif/vscode-esp-idf": {
