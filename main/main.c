@@ -19,8 +19,10 @@
 
 #include "button/button_init.h"
 
-#include "leds/led_init.h"
-#include "leds/led_animator.h"
+#include "leds_animator/led_init.h"
+#include "leds_animator/led_animator.h"
+#include "led_effects/progressive_reveal_effect.h"
+
 
 #include "bt/bt_init.h"
 
@@ -62,6 +64,8 @@ const gpio_num_t LedSwitchGPIONum = GPIO_NUM_4;
 // Main application log tag
 static const char* MainTag = "app_main";
 
+// Holiday Sequence LED effect
+led_effect_handle_t progressive_reveal_effect_handle;
 
 
 static void on_momentary_button_pressed(void) {
@@ -93,8 +97,13 @@ void app_main(void) {
 
     // Configure tree lights
     ESP_ERROR_CHECK(configure_led_string(LedDataGPIONum, LedSwitchGPIONum));
-    ESP_ERROR_CHECK(start_led_string_effect(LedProgressiveRevealEffect));
+    ESP_ERROR_CHECK(initialize_led_string_effect(progressive_reveal_led_effect, &progressive_reveal_effect_handle));
+    ESP_ERROR_CHECK(start_led_string_effect(progressive_reveal_effect_handle, nullptr));
 
     // Dispatch GPIO events - This function blocks with portMAX_DELAY as timeout and never returns
     ESP_ERROR_CHECK(gpio_events_queue_dispatch());
+
+    //
+    // app_main() never returns and does not cleanup allocated objects
+    //
 }

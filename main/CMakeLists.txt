@@ -23,10 +23,11 @@ set(srcs
 
         "configuration/nvs_configuration.c"
 
-        "leds/led_init.c"
-        "leds/led_internals.c"
-        "leds/led_animator.c"
-        "leds/progressive_reveal_effect.c"
+        "leds_animator/led_init.c"
+        "leds_animator/led_internals.c"
+        "leds_animator/led_animator.c"
+
+        "led_effects/progressive_reveal_effect.c"
 
         "main.c"
 )

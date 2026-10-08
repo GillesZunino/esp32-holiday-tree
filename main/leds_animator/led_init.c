@@ -5,8 +5,8 @@
 #include <driver/gpio.h>
 
 
-#include "leds/led_internals.h"
-#include "leds/led_init.h"
+#include "leds_animator/led_internals.h"
+#include "leds_animator/led_init.h"
 
 
 // The Holiday Tree has 5 LEDs
@@ -29,7 +29,7 @@ esp_err_t configure_led_string(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchP
     esp_err_t err = create_led_string(ledDataPin, ledOnOffSwitchPin, HolidayTreeLedsCount);
     if (err == ESP_OK) {
         // Turn string power on ...
-        err = set_led_string_on_off(LedStringOn);
+        err = set_led_string_on_off(true);
 
         // Clear string ...
         if (err == ESP_OK) {
@@ -38,7 +38,7 @@ esp_err_t configure_led_string(gpio_num_t ledDataPin, gpio_num_t ledOnOffSwitchP
         
         // Turn string power back off
         if (err == ESP_OK) {
-            err = set_led_string_on_off(LedStringOff);
+            err = set_led_string_on_off(false);
         }
     }
 

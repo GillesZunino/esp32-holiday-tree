@@ -4,7 +4,7 @@
 
 #include "led_strip.h"
 
-#include "leds/led_internals.h"
+#include "leds_animator/led_internals.h"
 
 
 // Tag name used on ESP_LOGx macros
@@ -62,8 +62,8 @@ esp_err_t create_led_string(gpio_num_t dataPin, gpio_num_t onOffPin, uint32_t le
 }
 
 
-esp_err_t set_led_string_on_off(led_string_state_t onOff) {
-    return gpio_set_level(s_leds_string_on_off_gpio, onOff == LedStringOn ? 1 : 0);
+esp_err_t set_led_string_on_off(bool onOff) {
+    return gpio_set_level(s_leds_string_on_off_gpio, onOff ? 1 : 0);
 }
 
 esp_err_t set_led_string_pixel(uint32_t index, uint32_t red, uint32_t green, uint32_t blue) {
