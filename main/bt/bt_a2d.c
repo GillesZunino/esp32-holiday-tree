@@ -49,8 +49,6 @@ esp_err_t setup_a2d_profile() {
     // Initialize Advanced Audio
     ESP_RETURN_ON_ERROR(esp_a2d_sink_init(), BtA2dTag, "esp_a2d_sink_init() failed");
 
-    // Get the default delay - The response comes through the callback
-    ESP_RETURN_ON_ERROR(esp_a2d_sink_get_delay_value(), BtA2dTag, "esp_a2d_sink_get_delay_value()");
     return ESP_OK;
 }
 
