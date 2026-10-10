@@ -2,7 +2,7 @@
 // Copyright 2024, Gilles Zunino
 // -----------------------------------------------------------------------------------
 
-#include <freertos/portmacro.h>
+#include <freertos/FreeRTOS.h>
 
 #include "led_effects/progressive_reveal_effect.h"
 
@@ -17,8 +17,8 @@ static const uint32_t LEFT_LED1_INDEX = 3;
 static const uint32_t LEFT_LED2_INDEX = 4;
 
 
-// Time to wait per frame in milliseconds
-static const TickType_t TimePerFrameMs = 1000;
+// Time to wait per frame in FreeRTOS ticks
+static const TickType_t TimePerFrameTicks = pdMS_TO_TICKS(1000);
 
 
 void progressive_reveal_led_effect(led_effect_context_t* context) {
@@ -29,35 +29,35 @@ void progressive_reveal_led_effect(led_effect_context_t* context) {
         // All Off
         animator->clear_led_string();
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Center LED On - white
         animator->set_led_string_pixel(CENTER_LED_INDEX, 255, 255, 255);
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Right 1 LED on - Red
         animator->set_led_string_pixel(RIGHT_LED1_INDEX, 255, 0, 0);
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Right 2 LED on - Red
         animator->set_led_string_pixel(RIGHT_LED2_INDEX, 255, 0, 0);
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Left 1 LED on - Green
         animator->set_led_string_pixel(LEFT_LED1_INDEX, 0, 255, 0);
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Left 2 LED on - Green
         animator->set_led_string_pixel(LEFT_LED2_INDEX, 0, 255, 0);
         animator->refresh_led_string();
-        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
         // Hold the fully lit step before cycling
-        //WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameMs, notification);
+        //WAIT_AND_GOTO_ON_SIGNAL(TimePerFrameTicks, notification);
 
 notification:
         if (notification == LedEffectNotificationEnd) {
