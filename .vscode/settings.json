@@ -56,6 +56,9 @@
   "idf.launchMonitorOnDebugSession": true,
   "idf.enableSizeTaskAfterBuildTask": true,
 
+  "idf.qemuDebugMonitor": false,
+  "idf.qemuExtraArgs": [],
+
   // SVD files from https://github.com/espressif/svd/tree/main/svd
   "idf.svdFilePath": "${workspaceFolder}/svd/${env:IDF_TARGET}.svd",
 
