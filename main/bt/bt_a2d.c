@@ -2,6 +2,8 @@
 // Copyright 2024, Gilles Zunino
 // -----------------------------------------------------------------------------------
 
+#include <stdatomic.h>
+
 #include <esp_check.h>
 #include <esp_log.h>
 #include <esp_gap_bt_api.h>
@@ -73,29 +75,30 @@ static void a2d_data_sink_callback(const uint8_t* data, uint32_t len) {
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 
 // Keep track of the number of audio packets received - Only in development
-static uint32_t s_audio_packets_count = 0;
+static atomic_uint_fast32_t s_audio_packets_count = 0;
 
 // Keep track of the average number of bytes per sample to write - Only in development
-static uint32_t s_audio_average_packet_size = 0;
-static uint64_t s_audio_total_bytes_received = 0;
+static atomic_uint_fast32_t s_audio_average_packet_size = 0;
+static atomic_uint_fast64_t s_audio_total_bytes_received = 0;
 
 
 static void log_incoming_a2d_data_stats(uint32_t len) {
-    s_audio_packets_count++;
-    
-    s_audio_total_bytes_received += len;
-    s_audio_average_packet_size = s_audio_total_bytes_received /  s_audio_packets_count;
+    uint32_t packets_count = atomic_fetch_add(&s_audio_packets_count, 1) + 1;
 
-    if (s_audio_packets_count % 100 == 0) {
-        ESP_LOGI(BtA2dTag, "Audio packet count %"PRIu32" - Average buffer size %"PRIu32, s_audio_packets_count, s_audio_average_packet_size);
+    uint64_t total_bytes_received = atomic_fetch_add(&s_audio_total_bytes_received, len) + len;
+    uint32_t average_packet_size = (uint32_t) (total_bytes_received / packets_count);
+    atomic_store(&s_audio_average_packet_size, average_packet_size);
+
+    if (packets_count % 100 == 0) {
+        ESP_LOGI(BtA2dTag, "Audio packet count %"PRIu32" - Average buffer size %"PRIu32, packets_count, average_packet_size);
     }
 }
 
 static void reset_incoming_a2d_data_stats(const esp_a2d_cb_param_t* const params) {
     if (params->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
-        s_audio_packets_count = 0;
-        s_audio_average_packet_size = 0;
-        s_audio_total_bytes_received = 0;
+        atomic_store(&s_audio_packets_count, 0);
+        atomic_store(&s_audio_average_packet_size, 0);
+        atomic_store(&s_audio_total_bytes_received, 0);
     }
 }
 
