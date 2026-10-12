@@ -65,7 +65,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
             char* featuresStr[6];
             get_avrc_feature_names(params->rmt_feats.feat_mask, featuresStr);
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REMOTE_FEATURES_EVT rmt_feats.feat_mask (0x%"PRIx32")", params->rmt_feats.feat_mask);
-            for (uint8_t index = 0; (featuresStr[index] != NULL) && (index < 6); index++) {
+            for (uint8_t index = 0; (index < 6) && (featuresStr[index] != NULL); index++) {
                 ESP_LOGI(BtAvrcTargetTag, "[TG]\t%s", featuresStr[index]);
             }
 
@@ -73,7 +73,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
             char* featureFlagsStr[8];
             get_avrc_controller_feature_flags(params->rmt_feats.ct_feat_flag, featureFlagsStr);
             ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REMOTE_FEATURES_EVT rmt_feats.ct_feat_flag (0x%"PRIx16")", params->rmt_feats.ct_feat_flag);
-            for (uint8_t index = 0; (featureFlagsStr[index] != NULL) && (index < 8); index++) {
+            for (uint8_t index = 0; (index < 8) && (featureFlagsStr[index] != NULL); index++) {
                 ESP_LOGI(BtAvrcTargetTag, "[TG]\t%s", featureFlagsStr[index]);
             }
 #endif
