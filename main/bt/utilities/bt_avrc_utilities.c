@@ -100,7 +100,7 @@ char** get_avrc_feature_names(uint32_t featureMask, char* featuresStr[6]) {
         return NULL;
     }
 
-    memset(featuresStr, 0,6 * sizeof(featuresStr[0]));
+    memset(featuresStr, 0, 6 * sizeof(featuresStr[0]));
     uint8_t index = 0;
 
     if ((featureMask & ESP_AVRC_FEAT_ADV_CTRL) == ESP_AVRC_FEAT_ADV_CTRL) {
