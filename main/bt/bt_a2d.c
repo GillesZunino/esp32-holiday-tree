@@ -180,7 +180,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
             ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT codec types (0x%x)", params->audio_cfg.mcc.type);
             char* codecStr[5];
             get_a2d_media_codec_names(params->audio_cfg.mcc.type, codecStr);
-            for (uint8_t index = 0; (codecStr[index] != NULL) && (index < 5); index++) {
+            for (uint8_t index = 0; index < 5 && codecStr[index] != NULL; index++) {
                 ESP_LOGI(BtA2dTag, "\t%s", codecStr[index]);
             }
 #endif
