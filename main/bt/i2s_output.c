@@ -67,7 +67,7 @@ static i2s_chan_handle_t s_i2s_tx_channel = NULL;
 static TaskHandle_t s_i2s_task_handle = NULL;
 static RingbufHandle_t s_i2s_ringbuffer = NULL;
 
-static uint8_t s_bytes_per_sample_per_channel = 0;
+static atomic_uint_fast8_t s_bytes_per_sample_per_channel = I2S_DATA_BIT_WIDTH_16BIT / 8;   // Initialize so it is not 0 - We currently configure the I2S output for 16-bit audio samples
 static size_t s_bytes_to_take_from_ringbuffer = 0;
 
 static uint8_t* s_i2s_audio_processing_buffer = NULL;
@@ -135,6 +135,9 @@ esp_err_t delete_i2s_output() {
 }
 
 esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWidth, i2s_slot_mode_t slotMode) {
+    uint8_t bytes_per_sample_per_channel = (uint8_t) (dataWidth / 8);
+    ESP_RETURN_ON_FALSE(bytes_per_sample_per_channel > 0, ESP_ERR_INVALID_ARG, BtI2sOutputTag, "Invalid bytes per sample per channel");
+
     // Disable the transmission channel so it can be reconfigured
     ESP_RETURN_ON_ERROR(i2s_channel_disable(s_i2s_tx_channel), BtI2sOutputTag, "i2s_channel_disable() failed");
 
@@ -150,7 +153,7 @@ esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWid
     ESP_RETURN_ON_ERROR(i2s_channel_enable(s_i2s_tx_channel), BtI2sOutputTag, "i2s_channel_enable");
 
     // Cache per channel data width in byte - We currently only support SBC which is 16 bits per sample per channel
-    s_bytes_per_sample_per_channel = dataWidth / 8;
+    atomic_store(&s_bytes_per_sample_per_channel, bytes_per_sample_per_channel);
 
     return ESP_OK;
 }
@@ -470,7 +473,8 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
     size_t maxToRetrieveUnaligned = bytesWaitingToBeRetrieved > maxBytesToTakeFromBuffer ? maxBytesToTakeFromBuffer : bytesWaitingToBeRetrieved;
 
     // Align to boundaries of the number of bytes per channel - In practice, this is 2 bytes
-    size_t bytesToTake = (maxToRetrieveUnaligned >> (s_bytes_per_sample_per_channel - 1)) << (s_bytes_per_sample_per_channel - 1);
+    uint8_t bytes_per_sample_per_channel = atomic_load(&s_bytes_per_sample_per_channel);
+    size_t bytesToTake = (maxToRetrieveUnaligned >> (bytes_per_sample_per_channel - 1)) << (bytes_per_sample_per_channel - 1);
     if (bytesToTake > 0) {
         size_t sizeRetrievedFromRingBufferInBytes = 0;
 
@@ -538,7 +542,7 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
 
             // Data has been acquired and is a multiple of audio samples - Apply processing and write to I2S
             if (err == ESP_OK) {
-                apply_volume(s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, s_bytes_per_sample_per_channel);
+                apply_volume(s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, bytes_per_sample_per_channel);
 
                 size_t bytesWritten = 0;
                 err = i2s_channel_write(s_i2s_tx_channel, (void*) s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
