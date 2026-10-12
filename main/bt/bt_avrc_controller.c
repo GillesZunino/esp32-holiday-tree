@@ -46,26 +46,37 @@ static esp_err_t register_for_notification_with_parameter(esp_avrc_rn_event_ids_
 void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t* param) {
     switch (event) {
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
-            // Copy metadata strings before enqueuing the event
-            uint8_t* attrText = (uint8_t *) malloc(param->meta_rsp.attr_length + 1);
-            if (attrText != NULL) {
-                memcpy(attrText, param->meta_rsp.attr_text, param->meta_rsp.attr_length);
-                attrText[param->meta_rsp.attr_length] = 0;
-
-                // Save the current metadata string
-                uint8_t* original_attrText = param->meta_rsp.attr_text;
-                param->meta_rsp.attr_text = attrText;
-
-                // Queue event for processing - Free allocated metadata on failure - The callback calls free() on allocated memory
-                bool eventQueued = queue_bluetooth_workitem(avrc_controller_event_handler, event, param, sizeof(esp_avrc_ct_cb_param_t));
-                if (!eventQueued) {
-                    free(param->meta_rsp.attr_text);
-                }
-
-                // Restore metadata string
-                param->meta_rsp.attr_text = original_attrText;
+            int attr_length = param->meta_rsp.attr_length;
+            if (attr_length < 0) {
+                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Invalid attr_length: %d", __func__, attr_length);
             } else {
-                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Failed to allocate: %d", __func__, param->meta_rsp.attr_length);
+                if ((attr_length > 0) && (param->meta_rsp.attr_text == NULL)) {
+                    ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. NULL attr_text with length: %d", __func__, attr_length);
+                } else {
+                    // Copy metadata strings before enqueuing the event
+                    uint8_t* attrText = (uint8_t *) malloc((size_t) attr_length + 1U);
+                    if (attrText != NULL) {
+                        if (attr_length > 0) {
+                            memcpy(attrText, param->meta_rsp.attr_text, (size_t) attr_length);
+                        }
+                        attrText[attr_length] = 0;
+
+                        // Save the current metadata string
+                        uint8_t* original_attrText = param->meta_rsp.attr_text;
+                        param->meta_rsp.attr_text = attrText;
+
+                        // Queue event for processing - Free allocated metadata on failure - The callback calls free() on allocated memory
+                        bool eventQueued = queue_bluetooth_workitem(avrc_controller_event_handler, event, param, sizeof(esp_avrc_ct_cb_param_t));
+                        if (!eventQueued) {
+                            free(param->meta_rsp.attr_text);
+                        }
+
+                        // Restore metadata string
+                        param->meta_rsp.attr_text = original_attrText;
+                    } else {
+                        ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Failed to allocate: %d", __func__, param->meta_rsp.attr_length);
+                    }
+                }
             }
         }
         break;
