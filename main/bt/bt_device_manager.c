@@ -63,7 +63,7 @@ esp_err_t bt_device_manager_device_disconnected(const struct avrc_tg_conn_stat_p
 
     esp_err_t err = save_device_configuration(s_remote_bda, &configuration);
     if (err != ESP_OK) {
-        ESP_LOGE(BtDeviceManagerTag, "[TG] save_device_configuration() failed with %d", err);
+        ESP_LOGE(BtDeviceManagerTag, "[TG] save_device_configuration() failed with %" PRId32, (int32_t) err);
     }
 
     // Clear address of the remote device on disconnect
@@ -103,7 +103,7 @@ static esp_err_t save_device_configuration(const esp_bd_addr_t bda, const bt_dev
             ESP_LOGI(BtDeviceManagerTag, "[TG] save_device_configuration() - Saved configuration for device [%s]", str);
         }
         else {
-            ESP_LOGW(BtDeviceManagerTag, "[TG] save_device_configuration() - Failed to save for device [%s] with error %d", str, err);
+            ESP_LOGW(BtDeviceManagerTag, "[TG] save_device_configuration() - Failed to save for device [%s] with error %" PRId32, str, (int32_t) err);
         }
     } else {
         ESP_LOGW(BtDeviceManagerTag, "[TG] save_device_configuration() - BDA is null, not saving configuration");
@@ -130,7 +130,7 @@ static void log_device_configuration(const char* const message, const esp_bd_add
     get_bda_string(bda, str);
 
     ESP_LOGI(BtDeviceManagerTag, "[TG] Device [%s] -> %s", str, message);
-    ESP_LOGI(BtDeviceManagerTag, "\t Volume (AVRC): %d", configuration->volume);
+    ESP_LOGI(BtDeviceManagerTag, "\t Volume (AVRC): %" PRIu8, configuration->volume);
 }
 
 #endif

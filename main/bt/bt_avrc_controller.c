@@ -48,10 +48,10 @@ void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
             int attr_length = param->meta_rsp.attr_length;
             if (attr_length < 0) {
-                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Invalid attr_length: %d", __func__, attr_length);
+                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Invalid attr_length: %" PRId32, __func__, (int32_t) attr_length);
             } else {
                 if ((attr_length > 0) && (param->meta_rsp.attr_text == NULL)) {
-                    ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. NULL attr_text with length: %d", __func__, attr_length);
+                    ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. NULL attr_text with length: %" PRId32, __func__, (int32_t) attr_length);
                 } else {
                     // Copy metadata strings before enqueuing the event
                     uint8_t* attrText = (uint8_t *) malloc((size_t) attr_length + 1U);
@@ -74,7 +74,7 @@ void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
                         // Restore metadata string
                         param->meta_rsp.attr_text = original_attrText;
                     } else {
-                        ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Failed to allocate: %d", __func__, param->meta_rsp.attr_length);
+                        ESP_LOGE(BtAvrcControllerTag, "%s() [CT] ESP_AVRC_CT_METADATA_RSP_EVT could not be handled. Failed to allocate: %" PRId32, __func__, (int32_t) param->meta_rsp.attr_length);
                     }
                 }
             }
@@ -84,7 +84,7 @@ void avrc_controller_callback(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
         default: {
             bool eventQueued = queue_bluetooth_workitem(avrc_controller_event_handler, event, param, sizeof(esp_avrc_ct_cb_param_t));
             if (!eventQueued) {
-                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] could not queue event %d to Bluetooth dispatcher", __func__, event);
+                ESP_LOGE(BtAvrcControllerTag, "%s() [CT] could not queue event %" PRId32 " to Bluetooth dispatcher", __func__, (int32_t) event);
             }
         }
         break;
@@ -113,7 +113,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
         case ESP_AVRC_CT_METADATA_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG            
             uint8_t attributeId = params->meta_rsp.attr_id;
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%x): '%s'", get_avrc_metadata_attribute_name(attributeId), attributeId , params->meta_rsp.attr_text);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_METADATA_RSP_EVT -> %s (0x%" PRIx8 "): '%s'", get_avrc_metadata_attribute_name(attributeId), attributeId , params->meta_rsp.attr_text);
 #endif
             if (params->meta_rsp.attr_text != NULL) {
                 // Free memory we allocated for the metadata string
@@ -133,7 +133,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
        case ESP_AVRC_CT_CHANGE_NOTIFY_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
 
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> %s (0x%x)", get_avrc_notification_name(params->change_ntf.event_id), params->change_ntf.event_id);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> %s (0x%" PRIx8 ")", get_avrc_notification_name(params->change_ntf.event_id), params->change_ntf.event_id);
 #endif
             if (handle_controller_notification_event(params->change_ntf.event_id, &params->change_ntf.event_parameter) != ESP_OK) {
                 ESP_LOGE(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_CHANGE_NOTIFY_EVT failed in handle_controller_notification_event()");
@@ -166,7 +166,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
 
         case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT remote rn_cap: count %d, bitmask 0x%x", params->get_rn_caps_rsp.cap_count, params->get_rn_caps_rsp.evt_set.bits);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT remote rn_cap: count %" PRIu8 ", bitmask 0x%" PRIx16, params->get_rn_caps_rsp.cap_count, params->get_rn_caps_rsp.evt_set.bits);
 #endif
             // Capture remote controller capabilities - We will need them when a notification is received and we need to re-attach the event notification
             s_avrc_peer_notifications_capabilities.bits = params->get_rn_caps_rsp.evt_set.bits;
@@ -182,7 +182,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
             uint8_t volumeAvrc = params->set_volume_rsp.volume;
             uint16_t volumePercent = AVRC_VOLUME_TO_PERCENT(volumeAvrc);
-            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_SET_ABSOLUTE_VOLUME_RSP_EVT volume: %d (%d%%)", volumeAvrc, volumePercent);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] ESP_AVRC_CT_SET_ABSOLUTE_VOLUME_RSP_EVT volume: %" PRIu8 " (%" PRIu16 "%%)", volumeAvrc, volumePercent);
 #endif
         }
         break;
@@ -195,7 +195,7 @@ static void avrc_controller_event_handler(uint16_t event, void* rawParam) {
         break;
 
         default:
-            ESP_LOGW(BtAvrcControllerTag, "%s() [CT] received unknown event: %d", __func__, event);
+            ESP_LOGW(BtAvrcControllerTag, "%s() [CT] received unknown event: %" PRId16, __func__, (int16_t) event);
             break;
     }
 }
@@ -204,14 +204,14 @@ static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn
     switch (event) {
         case ESP_AVRC_RN_VOLUME_CHANGE: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_VOLUME_CHANGE - Volume changed: %d (0x%x)", params->volume, params->volume);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_VOLUME_CHANGE - Volume changed: %" PRIu8 " (0x%" PRIx8 ")", params->volume, params->volume);
 #endif
             return ESP_OK;
         }
 
         case ESP_AVRC_RN_PLAY_STATUS_CHANGE: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_STATUS_CHANGE - Playback status changed - %s (0x%x)", get_avrc_playback_stat_name(params->playback), params->playback);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_PLAY_STATUS_CHANGE - Playback status changed - %s (0x%" PRIx32 ")", get_avrc_playback_stat_name(params->playback), (uint32_t) params->playback);
 #endif
             return register_for_notification(ESP_AVRC_RN_PLAY_STATUS_CHANGE, NotificationPlaybackChangeTransactionLabel);
         }
@@ -234,13 +234,13 @@ static esp_err_t handle_controller_notification_event(uint8_t event, esp_avrc_rn
 
         case ESP_AVRC_RN_BATTERY_STATUS_CHANGE: {
 #if CONFIG_HOLIDAYTREE_BT_AVR_CT_LOG
-            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_BATTERY_STATUS_CHANGE - Battery status changed - %s (0x%x)", get_avrc_battery_stat_name(params->batt), params->batt);
+            ESP_LOGI(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_RN_BATTERY_STATUS_CHANGE - Battery status changed - %s (0x%" PRIx32 ")", get_avrc_battery_stat_name(params->batt), (uint32_t) params->batt);
 #endif
             return ESP_OK;
         }
 
         default: {
-            ESP_LOGW(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> Unhandled %s (0x%x)", get_avrc_notification_name(event), event);
+            ESP_LOGW(BtAvrcControllerTag, "[CT] [NOTIFY] ESP_AVRC_CT_CHANGE_NOTIFY_EVT -> Unhandled %s (0x%" PRIx8 ")", get_avrc_notification_name(event), event);
             return ESP_OK;
         }
     }

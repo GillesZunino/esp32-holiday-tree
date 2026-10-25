@@ -75,7 +75,7 @@ cleanup:
     free_led_string_effect(pEffect);
 
 #if CONFIG_HOLIDAYTREE_LEDS_LOG
-    ESP_LOGE(LedStringTag, "Failed to free LED effect resources, error: (%d) -> %s", free_err, esp_err_to_name(free_err));
+    ESP_LOGE(LedStringTag, "Failed to free LED effect resources, error: (%" PRId32 ") -> %s", (int32_t) free_err, esp_err_to_name(free_err));
 #endif
 
     return ret;
@@ -220,7 +220,7 @@ static led_effect_notification_t delay_with_parent_signals(TickType_t xTicksToWa
 
 #if CONFIG_HOLIDAYTREE_LEDS_LOG
     if (notification != LedEffectNotificationNone) {
-        ESP_LOGI(LedStringTag, "Effect received notification: (%d) -> %s", notification, get_led_task_notification_name(notification));
+        ESP_LOGI(LedStringTag, "Effect received notification: (%" PRId8 ") -> %s", notification, get_led_task_notification_name(notification));
     }
 #endif
 

@@ -8,7 +8,7 @@
 
 
 // Notification the animator can send to an LED effect
-typedef enum {
+typedef enum : int8_t {
     LedEffectNotificationNone = -1,
     LedEffectNotificationEnd = 0,
 } led_effect_notification_t;

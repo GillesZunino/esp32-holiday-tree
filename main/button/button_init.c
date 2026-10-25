@@ -12,7 +12,7 @@ static const char* ButtonTag = "button";
 
 
 esp_err_t configure_momentary_button(gpio_num_t buttonGpio, isr_handler_fn_ptr fn) {
-    ESP_RETURN_ON_FALSE((buttonGpio >= GPIO_NUM_0) && (buttonGpio < GPIO_NUM_MAX), ESP_ERR_INVALID_ARG, ButtonTag, "Invalid button GPIO '%d'", (int) buttonGpio);
+    ESP_RETURN_ON_FALSE((buttonGpio >= GPIO_NUM_0) && (buttonGpio < GPIO_NUM_MAX), ESP_ERR_INVALID_ARG, ButtonTag, "Invalid button GPIO '%" PRId32 "'", (int32_t) buttonGpio);
     ESP_RETURN_ON_FALSE(fn != NULL, ESP_ERR_INVALID_ARG, ButtonTag, "NULL button handler 'fn'");
 
     gpio_config_t buttonPinConfiguration = {

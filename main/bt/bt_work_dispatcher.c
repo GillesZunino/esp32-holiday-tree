@@ -34,7 +34,7 @@ static void queue_consumer_task(void* arg);
 
 
 bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, const void* const params, size_t paramsLen) {
-    ESP_LOGD(BtWorkQueueTag, "%s() event: 0x%x, param len: %zu", __func__, eventId, paramsLen);
+    ESP_LOGD(BtWorkQueueTag, "%s() event: 0x%" PRIx16 ", param len: %zu", __func__, eventId, paramsLen);
 
     if ((s_bt_app_task_queue != NULL) && (s_bt_app_task_handle != NULL)) {
         bluetooth_workitem_t workItem = {
@@ -62,7 +62,7 @@ bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t event
             }
         }
     } else {
-        ESP_LOGE(BtWorkQueueTag, "%s() trying to queue event 0x%x when dispatcher is not running", __func__, eventId);
+        ESP_LOGE(BtWorkQueueTag, "%s() trying to queue event 0x%" PRIx16 " when dispatcher is not running", __func__, eventId);
     }
 
     return false;
@@ -132,7 +132,7 @@ static void queue_consumer_task(void* arg) {
         bluetooth_workitem_t workItem;
         bool itemDequeued = xQueueReceive(s_bt_app_task_queue, &workItem, (TickType_t) portMAX_DELAY) == pdTRUE;
         if (itemDequeued) {
-            ESP_LOGD(BtWorkQueueTag, "%s, dequeued event: 0x%x", __func__, workItem.eventId);
+            ESP_LOGD(BtWorkQueueTag, "%s, dequeued event: 0x%" PRIx16, __func__, workItem.eventId);
 
             if (workItem.handler != NULL) {
                 workItem.handler(workItem.eventId, workItem.params);

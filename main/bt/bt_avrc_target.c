@@ -30,7 +30,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams);
 void avrc_target_callback(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t* param) {
     bool eventEnqueued = queue_bluetooth_workitem(avrc_target_event_handler, event, param, sizeof(esp_avrc_tg_cb_param_t));
     if (!eventEnqueued) {
-        ESP_LOGE(BtAvrcTargetTag, "%s() [TG] could not queue event %d to Bluetooth dispatcher", __func__, event);
+        ESP_LOGE(BtAvrcTargetTag, "%s() [TG] could not queue event %" PRId32 " to Bluetooth dispatcher", __func__, (int32_t) event);
     }
 }
 
@@ -46,12 +46,12 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
             if (params->conn_stat.connected) {
                 esp_err_t err = bt_device_manager_device_connected(&params->conn_stat);
                 if (err != ESP_OK) {
-                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_connected() failed with %d", err);
+                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_connected() failed with %" PRId32, (int32_t) err);
                 }
             } else {
                 esp_err_t err = bt_device_manager_device_disconnected(&params->conn_stat);
                 if (err != ESP_OK) {
-                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_disconnected() failed with %d", err);
+                    ESP_LOGE(BtAvrcTargetTag, "[TG] bt_device_manager_device_disconnected() failed with %" PRId32, (int32_t) err);
                 }
             }
         }
@@ -85,7 +85,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
             uint8_t volumeAvrc = params->set_abs_vol.volume;
 #if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
             uint16_t volume_percent = AVRC_VOLUME_TO_PERCENT(params->set_abs_vol.volume);
-            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT volume: %d (%d%%)", volumeAvrc, volume_percent);
+            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT volume: %" PRIu8 " (%" PRIu16 "%%)", volumeAvrc, volume_percent);
 #endif
             set_volume_avrc(volumeAvrc);
         }
@@ -94,7 +94,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
         case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT: {
             uint8_t eventId = params->reg_ntf.event_id;
 #if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
-            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT -> %s (0x%x), param: 0x%"PRIx32, get_avrc_notification_name(eventId), eventId, params->reg_ntf.event_parameter);
+            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT -> %s (0x%" PRIx8 "), param: 0x%"PRIx32, get_avrc_notification_name(eventId), eventId, params->reg_ntf.event_parameter);
 #endif
             switch (eventId) {
                 case ESP_AVRC_RN_VOLUME_CHANGE: {
@@ -102,17 +102,17 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
                     esp_avrc_rn_param_t rnParam = { .volume = get_volume_avrc() };
 
 #if CONFIG_HOLIDAYTREE_BT_AVR_TG_LOG
-            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_RN_VOLUME_CHANGE -> INTERIM response with AVRC volume '%d'", rnParam.volume);
+            ESP_LOGI(BtAvrcTargetTag, "[TG] ESP_AVRC_RN_VOLUME_CHANGE -> INTERIM response with AVRC volume '%" PRIu8 "'", rnParam.volume);
 #endif
                     esp_err_t err = esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM, &rnParam);
                     if (err !=ESP_OK) {
-                        ESP_LOGE(BtAvrcTargetTag, "[TG] ESP_AVRC_RN_VOLUME_CHANGE -> esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM) failed (%d)", err);
+                        ESP_LOGE(BtAvrcTargetTag, "[TG] ESP_AVRC_RN_VOLUME_CHANGE -> esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM) failed (%" PRId32 ")", (int32_t) err);
                     }
                 }
                 break;
 
                 default:
-                    ESP_LOGW(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT -> Unknown Notification %s (0x%x), param: 0x%"PRIx32, get_avrc_notification_name(eventId), eventId, params->reg_ntf.event_parameter);
+                    ESP_LOGW(BtAvrcTargetTag, "[TG] ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT -> Unknown Notification %s (0x%" PRIx8 "), param: 0x%"PRIx32, get_avrc_notification_name(eventId), eventId, params->reg_ntf.event_parameter);
                 break;
             }
         }
@@ -126,7 +126,7 @@ static void avrc_target_event_handler(uint16_t event, void* rawParams) {
         break;
 
         default: {
-            ESP_LOGW(BtAvrcTargetTag, "%s() [TG] unhandled event: %d", __func__, event);
+            ESP_LOGW(BtAvrcTargetTag, "%s() [TG] unhandled event: %" PRId16, __func__, (int16_t) event);
         }
         break;
     }

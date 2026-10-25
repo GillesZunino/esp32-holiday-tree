@@ -57,7 +57,7 @@ esp_err_t setup_a2d_profile() {
 static void a2d_event_callback(esp_a2d_cb_event_t event, esp_a2d_cb_param_t* params) {
     bool eventEnqueued = queue_bluetooth_workitem(a2d_event_handler, event, params, sizeof(esp_a2d_cb_param_t));
     if (!eventEnqueued) {
-        ESP_LOGE(BtA2dTag, "%s() could not queue event %d to Bluetooth dispatcher", __func__, event);
+        ESP_LOGE(BtA2dTag, "%s() could not queue event %" PRId32 " to Bluetooth dispatcher", __func__, (int32_t) event);
     }
 }
 
@@ -166,7 +166,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 #endif
             esp_err_t err = set_i2s_output_audio_state(params->audio_stat.state);
             if (err != ESP_OK) {
-                ESP_LOGE(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %d", get_a2d_audio_state_name(params->audio_stat.state), err);
+                ESP_LOGE(BtA2dTag, "ESP_A2D_AUDIO_STATE_EVT %s - Failed to set_i2s_output_audio_state() with %" PRId32, get_a2d_audio_state_name(params->audio_stat.state), (int32_t) err);
             }
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
@@ -177,7 +177,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 
         case ESP_A2D_AUDIO_CFG_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-            ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT codec types (0x%x)", params->audio_cfg.mcc.type);
+            ESP_LOGI(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT codec types (0x%" PRIx8 ")", params->audio_cfg.mcc.type);
             char* codecStr[5];
             get_a2d_media_codec_names(params->audio_cfg.mcc.type, codecStr);
             for (uint8_t index = 0; index < 5 && codecStr[index] != NULL; index++) {
@@ -196,7 +196,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
                     uint32_t sampleFrequency = get_sample_frequency(samplingFrequencyBits);
 
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-                    ESP_LOGI(BtA2dTag, "\tSample frequency %s (%lu)", get_a2d_sbc_sample_frequency_name(samplingFrequencyBits), sampleFrequency);
+                    ESP_LOGI(BtA2dTag, "\tSample frequency %s (%" PRIu32 ")", get_a2d_sbc_sample_frequency_name(samplingFrequencyBits), sampleFrequency);
 #endif
 
                     // Channel mode / Channelcount
@@ -204,19 +204,19 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
                     uint8_t channelCount = get_channel_count(channelModeBits);
 
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-                    ESP_LOGI(BtA2dTag, "\tChannel mode %s (0x%x) - Channel count %d", get_a2d_sbc_channel_mode_name(channelModeBits), channelModeBits, channelCount);
+                    ESP_LOGI(BtA2dTag, "\tChannel mode %s (0x%" PRIx8 ") - Channel count %" PRIu8, get_a2d_sbc_channel_mode_name(channelModeBits), channelModeBits, channelCount);
 
                     // Blocks and sub bands
                     uint8_t blocksCountBits = params->audio_cfg.mcc.cie.sbc_info.block_len;
                     uint8_t subbandsBits = params->audio_cfg.mcc.cie.sbc_info.num_subbands;
-                    ESP_LOGI(BtA2dTag, "\tBlocks %s (0x%x) - Sub bands %s (0x%x)", get_a2d_sbc_block_count_name(blocksCountBits), blocksCountBits, get_a2d_sbc_subbands_name(subbandsBits), subbandsBits);
+                    ESP_LOGI(BtA2dTag, "\tBlocks %s (0x%" PRIx8 ") - Sub bands %s (0x%" PRIx8 ")", get_a2d_sbc_block_count_name(blocksCountBits), blocksCountBits, get_a2d_sbc_subbands_name(subbandsBits), subbandsBits);
 
                     // Allocation mode
                     uint8_t allocationModeBits = params->audio_cfg.mcc.cie.sbc_info.alloc_mthd;
-                    ESP_LOGI(BtA2dTag, "\tAllocation mode %s (0x%x)", get_a2d_sbc_allocation_mode(allocationModeBits), allocationModeBits);
+                    ESP_LOGI(BtA2dTag, "\tAllocation mode %s (0x%" PRIx8 ")", get_a2d_sbc_allocation_mode(allocationModeBits), allocationModeBits);
 
                     // Min and max bit pool
-                    ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %d | max bit pool %d", params->audio_cfg.mcc.cie.sbc_info.min_bitpool, params->audio_cfg.mcc.cie.sbc_info.max_bitpool);
+                    ESP_LOGI(BtA2dTag, "\tESP_A2D_AUDIO_CFG_EVT - SBC codec min bit pool %" PRIu8 " | max bit pool %" PRIu8, params->audio_cfg.mcc.cie.sbc_info.min_bitpool, params->audio_cfg.mcc.cie.sbc_info.max_bitpool);
 #endif
 
                     // Configure I2S output with the parameters extracted from the codec configuration - SBC is always 16 bits data
@@ -229,7 +229,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
                 break;
 
                 default:
-                    ESP_LOGW(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT unsupported codec (0x%x)", params->audio_cfg.mcc.type);
+                    ESP_LOGW(BtA2dTag, "ESP_A2D_AUDIO_CFG_EVT unsupported codec (0x%" PRIx8 ")", params->audio_cfg.mcc.type);
                 break;
             }
         }
@@ -244,14 +244,14 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 
         case ESP_A2D_PROF_STATE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-            ESP_LOGI(BtA2dTag, "ESP_A2D_PROF_STATE_EVT %s (0x%x)", get_a2d_init_state_name(params->a2d_prof_stat.init_state), params->a2d_prof_stat.init_state);
+            ESP_LOGI(BtA2dTag, "ESP_A2D_PROF_STATE_EVT %s (0x%" PRIx32 ")", get_a2d_init_state_name(params->a2d_prof_stat.init_state), (uint32_t) params->a2d_prof_stat.init_state);
 #endif
         }
         break;
 
         case ESP_A2D_SNK_PSC_CFG_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_PSC_CFG_EVT %s (0x%02x)", get_a2d_protocol_service_capabilities_name(params->a2d_psc_cfg_stat.psc_mask), params->a2d_psc_cfg_stat.psc_mask);
+            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_PSC_CFG_EVT %s (0x%02" PRIx16 ")", get_a2d_protocol_service_capabilities_name(params->a2d_psc_cfg_stat.psc_mask), params->a2d_psc_cfg_stat.psc_mask);
             bool delayReportingSupported = (params->a2d_psc_cfg_stat.psc_mask & ESP_A2D_PSC_DELAY_RPT) == ESP_A2D_PSC_DELAY_RPT;
             ESP_LOGI(BtA2dTag, "\tDelay reporting %s", delayReportingSupported ? "supported" : "NOT supported");
 #endif
@@ -261,7 +261,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
         case ESP_A2D_SNK_SET_DELAY_VALUE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
             if (params->a2d_set_delay_value_stat.set_state == ESP_A2D_SET_SUCCESS) {
-                ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT delay value %u (in 1/10 ms) -> %u ms", params->a2d_set_delay_value_stat.delay_value, params->a2d_set_delay_value_stat.delay_value / 10);
+                ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT delay value %" PRIu16 " (in 1/10 ms) -> %" PRIu16 " ms", params->a2d_set_delay_value_stat.delay_value, (uint16_t) (params->a2d_set_delay_value_stat.delay_value / 10));
             } else {
                 ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_SET_DELAY_VALUE_EVT failed");
             }
@@ -271,7 +271,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
 
         case ESP_A2D_SNK_GET_DELAY_VALUE_EVT: {
 #if CONFIG_HOLIDAYTREE_BT_A2DP_LOG
-            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_GET_DELAY_VALUE_EVT delay value %u (in 1/10 ms) -> %u ms", params->a2d_get_delay_value_stat.delay_value, params->a2d_get_delay_value_stat.delay_value / 10);
+            ESP_LOGI(BtA2dTag, "ESP_A2D_SNK_GET_DELAY_VALUE_EVT delay value %" PRIu16 " (in 1/10 ms) -> %" PRIu16 " ms", params->a2d_get_delay_value_stat.delay_value, (uint16_t) (params->a2d_get_delay_value_stat.delay_value / 10));
 #endif
             esp_err_t err = esp_a2d_sink_set_delay_value(params->a2d_get_delay_value_stat.delay_value + ApplicationDelayInOneOverTenMs);
             if (err != ESP_OK) {
@@ -282,7 +282,7 @@ static void a2d_event_handler(uint16_t event, void* rawParams) {
         break;
 
         default:
-            ESP_LOGI(BtA2dTag, "%s() received unknown event '%d'", __func__, event);
+            ESP_LOGI(BtA2dTag, "%s() received unknown event '%" PRIu16 "'", __func__, event);
             break;
     }
 }

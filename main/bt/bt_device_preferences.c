@@ -57,5 +57,5 @@ esp_err_t set_bt_device_configuration(const esp_bd_addr_t bda, const bt_device_c
 }
 
 static void bda_to_nvs_key(const esp_bd_addr_t bda, char key[NVS_KEY_NAME_MAX_SIZE]) {
-    sprintf(key, "%02x%02x%02x%02x%02x%02x", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+    sprintf(key, "%02" PRIx8 "%02" PRIx8 "%02" PRIx8 "%02" PRIx8 "%02" PRIx8 "%02" PRIx8, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 }

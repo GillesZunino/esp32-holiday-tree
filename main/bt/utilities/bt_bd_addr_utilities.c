@@ -2,6 +2,7 @@
 // Copyright 2025, Gilles Zunino
 // -----------------------------------------------------------------------------------
 
+#include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -30,6 +31,6 @@ const char* get_bda_string(const esp_bd_addr_t bda, char str[18]) {
         return NULL;
     }
 
-    sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+    sprintf(str, "%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8 ":%02" PRIx8, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
     return str;
 }

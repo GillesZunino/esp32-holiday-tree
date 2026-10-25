@@ -119,7 +119,7 @@ esp_err_t delete_i2s_output() {
 
     esp_err_t err = stop_i2s_output_task();
     if (err != ESP_OK) {
-        ESP_LOGW(BtI2sOutputTag, "stop_i2s_output_task() failed while shutting down I2S output task (%d)", err);
+        ESP_LOGW(BtI2sOutputTag, "stop_i2s_output_task() failed while shutting down I2S output task (%" PRId32 ")", (int32_t) err);
     }
 
 #if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
@@ -128,7 +128,7 @@ esp_err_t delete_i2s_output() {
 
     err = delete_i2s_channel();
     if (err != ESP_OK) {
-        ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%d)", err);
+        ESP_LOGW(BtI2sOutputTag, "delete_i2s_channel() failed while shutting down I2S channel (%" PRId32 ")", (int32_t) err);
     }
 
     return err;
@@ -143,11 +143,11 @@ esp_err_t configure_i2s_output(uint32_t sampleRate, i2s_data_bit_width_t dataWid
 
     // Re-configure clock 
     i2s_std_clk_config_t clkCfg = I2S_STD_CLK_DEFAULT_CONFIG(sampleRate);
-    ESP_RETURN_ON_ERROR(i2s_channel_reconfig_std_clock(s_i2s_tx_channel, &clkCfg), BtI2sOutputTag, "i2s_channel_reconfig_std_clock(%lu) failed", sampleRate);
+    ESP_RETURN_ON_ERROR(i2s_channel_reconfig_std_clock(s_i2s_tx_channel, &clkCfg), BtI2sOutputTag, "i2s_channel_reconfig_std_clock(%" PRIu32 ") failed", sampleRate);
 
     // Re-configure slot
     i2s_std_slot_config_t slotCfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(dataWidth, slotMode);
-    ESP_RETURN_ON_ERROR(i2s_channel_reconfig_std_slot(s_i2s_tx_channel, &slotCfg), BtI2sOutputTag, "i2s_channel_reconfig_std_slot(%d) failed", slotMode);
+    ESP_RETURN_ON_ERROR(i2s_channel_reconfig_std_slot(s_i2s_tx_channel, &slotCfg), BtI2sOutputTag, "i2s_channel_reconfig_std_slot(%" PRId32 ") failed", (int32_t) slotMode);
 
     // Enable the channel
     ESP_RETURN_ON_ERROR(i2s_channel_enable(s_i2s_tx_channel), BtI2sOutputTag, "i2s_channel_enable");
@@ -212,11 +212,11 @@ static esp_err_t delete_i2s_channel() {
     esp_err_t err = ESP_OK;
     if (s_i2s_tx_channel != NULL) {
         if ((err = i2s_channel_disable(s_i2s_tx_channel)) != ESP_OK) {
-            ESP_LOGW(BtI2sOutputTag, "i2s_channel_disable() failed while shutting down I2S (%d)", err);
+            ESP_LOGW(BtI2sOutputTag, "i2s_channel_disable() failed while shutting down I2S (%" PRId32 ")", (int32_t) err);
         }
 
         if ((err = i2s_del_channel(s_i2s_tx_channel)) != ESP_OK) {
-            ESP_LOGW(BtI2sOutputTag, "i2s_del_channel() failed while shutting down I2S (%d)", err);
+            ESP_LOGW(BtI2sOutputTag, "i2s_del_channel() failed while shutting down I2S (%" PRId32 ")", (int32_t) err);
         }
 
         s_i2s_tx_channel = NULL;
@@ -300,7 +300,7 @@ esp_err_t set_i2s_output_audio_state(esp_a2d_audio_state_t audioState) {
             return notify_a2dp_audio_active();
 
         default:
-            ESP_LOGE(BtI2sRingbufferTag, "set_i2s_output_audio_state() - Unable to notify I2S task of audio state %d", audioState);
+            ESP_LOGE(BtI2sRingbufferTag, "set_i2s_output_audio_state() - Unable to notify I2S task of audio state %" PRId32, (int32_t) audioState);
             return ESP_FAIL;
     }
 }
@@ -336,7 +336,7 @@ uint32_t write_to_i2s_output(const uint8_t* data, uint32_t size) {
         return size;
     }
     else {
-        ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out trying to write to ring buffer or ring buffer overflow - Dropped %lu bytes", size);
+        ESP_LOGE(BtI2sRingbufferTag, "write_to_i2s_output() - Timed out trying to write to ring buffer or ring buffer overflow - Dropped %" PRIu32 " bytes", size);
         return 0;
     }
 }
@@ -355,7 +355,7 @@ static void log_ringbuffer_incoming_stats(uint32_t size) {
         UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
         float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
 
-        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] Writing %lu | Stats - Waiting: %u bytes - Free: %u bytes - Usage: %f%%", size, bytesWaitingToBeRetrieved, freeBytes, percentOccupied);
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] Writing %" PRIu32 " | Stats - Waiting: %" PRIu32 " bytes - Free: %" PRIu32 " bytes - Usage: %f%%", size, (uint32_t) bytesWaitingToBeRetrieved, (uint32_t) freeBytes, percentOccupied);
     }
 }
 
@@ -368,7 +368,7 @@ static void log_ringbuffer_outgoing_stats(BaseType_t bytesWaitingToBeRetrieved, 
         float percentFetched = (100 * bytesWaitingToBeRetrieved) / MinimumPrefetchBufferSizeInBytes;
         UBaseType_t freeBytes = RingBufferMaximumSizeInBytes - bytesWaitingToBeRetrieved;
         float percentOccupied = (100 * bytesWaitingToBeRetrieved) / RingBufferMaximumSizeInBytes;
-        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] [%s] In buffer %u - Needs %ld - Buffered %f%% | Buffer Free %u - Occupied %f%%", get_ringbuffer_mode_name(ringbufferMode), bytesWaitingToBeRetrieved, remainToBuffer, percentFetched, freeBytes, percentOccupied);
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] [%s] In buffer %" PRIu32 " - Needs %" PRId32 " - Buffered %f%% | Buffer Free %" PRIu32 " - Occupied %f%%", get_ringbuffer_mode_name(ringbufferMode), (uint32_t) bytesWaitingToBeRetrieved, remainToBuffer, percentFetched, (uint32_t) freeBytes, percentOccupied);
     }
 }
 
@@ -395,7 +395,7 @@ static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEs
         uint32_t thisCallTimeTicks = pdMS_TO_TICKS(thisCallTime / 1000);
         uint64_t averageTimePerCall = totalCallTime / numberOfCalls;
 
-        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] %s | Stats - This call: %llu us (%lu Ticks) - Average: %llu us - Min: %llu us - Max: %llu us", operationName, thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
+        ESP_LOGI(BtI2sOutputTag, "[Ringbuffer] %s | Stats - This call: %" PRIu64 " us (%" PRIu32 " Ticks) - Average: %" PRIu64 " us - Min: %" PRIu64 " us - Max: %" PRIu64 " us", operationName, thisCallTime, thisCallTimeTicks, averageTimePerCall, minTimePerCall, maxTimePerCall);
     }
 }
 
@@ -413,7 +413,7 @@ static void i2s_task_handler(void* arg) {
         xTaskNotifyWaitIndexed(I2STaskNotificationIndex, 0x0, ULONG_MAX, &ulNotificationValue, portMAX_DELAY);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-        ESP_LOGI(BtI2sRingbufferTag, "i2s_task_handler() - xTaskNotifyWaitIndexed() [Returned: %d] [Value: %lu]", notificationWaitOutcome, ulNotificationValue);
+        ESP_LOGI(BtI2sRingbufferTag, "i2s_task_handler() - xTaskNotifyWaitIndexed() [Returned: %" PRId32 "] [Value: %" PRIu32 "]", (int32_t) notificationWaitOutcome, ulNotificationValue);
 #endif
 
         // Unknown ring buffer mode when A2DP audio becomes active
@@ -441,7 +441,7 @@ static void i2s_task_handler(void* arg) {
                 if (ringbufferMode == RingbufferWriting) {
                     esp_err_t err = take_from_ringbuffer_and_write_to_i2s(s_bytes_to_take_from_ringbuffer);
                     if (err != ESP_OK) {
-                        ESP_LOGW(BtI2sRingbufferTag, "i2s_task_handler() - take_from_ringbuffer_and_write_to_i2s() failed (%d) - [s_bytes_to_take_from_ringbuffer: %u]", err, s_bytes_to_take_from_ringbuffer);
+                        ESP_LOGW(BtI2sRingbufferTag, "i2s_task_handler() - take_from_ringbuffer_and_write_to_i2s() failed (%" PRId32 ") - [s_bytes_to_take_from_ringbuffer: %zu]", (int32_t) err, s_bytes_to_take_from_ringbuffer);
                     }
                 } 
             }
@@ -516,7 +516,7 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
             err = sizeRetrievedFromRingBufferInBytes == bytesToTake ? ESP_OK : ESP_ERR_INVALID_SIZE;
             if (err != ESP_OK) {
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                ESP_LOGW(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer WRAP AROUND - Retrieved %u bytes out of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
+                ESP_LOGW(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer WRAP AROUND - Retrieved %zu bytes out of %zu bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
 #endif
                 size_t bytesTakenFromRingBuffer = sizeRetrievedFromRingBufferInBytes;
                 size_t bytesRemainingToTake = bytesToTake - bytesTakenFromRingBuffer;
@@ -526,13 +526,13 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
                     vRingbufferReturnItem(s_i2s_ringbuffer, data);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-                    ESP_LOGI(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer RE-READ - Retrieved %u bytes out of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesRemainingToTake);
+                    ESP_LOGI(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - Ringbuffer RE-READ - Retrieved %zu bytes out of %zu bytes", sizeRetrievedFromRingBufferInBytes, bytesRemainingToTake);
 #endif
                     // Calculate the total number of bytes acquired after the second read
                     sizeRetrievedFromRingBufferInBytes += bytesTakenFromRingBuffer;
                     err = sizeRetrievedFromRingBufferInBytes == bytesToTake ? ESP_OK : ESP_ERR_INVALID_SIZE;
                     if (err != ESP_OK) {
-                        ESP_LOGE(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - WRAP AROUND Compensation INCOMPLETE - TOTAL %u bytes of %u bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
+                        ESP_LOGE(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - WRAP AROUND Compensation INCOMPLETE - TOTAL %zu bytes of %zu bytes", sizeRetrievedFromRingBufferInBytes, bytesToTake);
                     }
                 } else {
                     ESP_LOGE(BtI2sRingbufferTag, "take_from_ringbuffer_and_write_to_i2s() - WRAP AROUND xRingbufferReceiveUpTo() failed");
@@ -547,11 +547,11 @@ static esp_err_t take_from_ringbuffer_and_write_to_i2s(size_t maxBytesToTakeFrom
                 size_t bytesWritten = 0;
                 err = i2s_channel_write(s_i2s_tx_channel, (void*) s_i2s_audio_processing_buffer, sizeRetrievedFromRingBufferInBytes, &bytesWritten, portMAX_DELAY);
                 if (err != ESP_OK) {
-                    ESP_LOGE(BtI2sOutputTag, "i2s_channel_write() failed with %d - Attempted to write %u bytes", err, sizeRetrievedFromRingBufferInBytes);
+                    ESP_LOGE(BtI2sOutputTag, "i2s_channel_write() failed with %" PRId32 " - Attempted to write %zu bytes", (int32_t) err, sizeRetrievedFromRingBufferInBytes);
                 }
             }
         } else {
-            ESP_LOGW(BtI2sOutputTag, "xRingbufferReceiveUpTo() Ring buffer data read timeout - Attempted to read %u bytes", bytesToTake);
+            ESP_LOGW(BtI2sOutputTag, "xRingbufferReceiveUpTo() Ring buffer data read timeout - Attempted to read %zu bytes", bytesToTake);
             err = ESP_ERR_TIMEOUT;
         }
     }
@@ -593,7 +593,7 @@ static void drain_ringbuffer() {
         vRingbufferGetInfo(s_i2s_ringbuffer, NULL, NULL, NULL, NULL, &bytesWaitingToBeRetrieved);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-        ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - In buffer %u bytes", bytesWaitingToBeRetrieved);
+        ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - In buffer %" PRIu32 " bytes", (uint32_t) bytesWaitingToBeRetrieved);
 #endif
         if (bytesWaitingToBeRetrieved > 0) {
             // ------------------------------------------------------------------------------------------------
@@ -612,7 +612,7 @@ static void drain_ringbuffer() {
             void* data = xRingbufferReceiveUpTo(s_i2s_ringbuffer, &sizeRetrievedFromRingBufferInBytes, ReadWaitTimeInTicks, bytesWaitingToBeRetrieved);
             
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
-            ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - xRingbufferReceiveUpTo() -> %s - Retrieved %u bytes out of %u bytes", data != NULL ? "SUCCESS" : "FAILED", sizeRetrievedFromRingBufferInBytes, bytesWaitingToBeRetrieved);
+            ESP_LOGI(BtI2sRingbufferTag, "drain_ringbuffer() - xRingbufferReceiveUpTo() -> %s - Retrieved %zu bytes out of %" PRIu32 " bytes", data != NULL ? "SUCCESS" : "FAILED", sizeRetrievedFromRingBufferInBytes, (uint32_t) bytesWaitingToBeRetrieved);
 #endif
 
             if (data != NULL) {
@@ -642,7 +642,7 @@ static esp_err_t notify_i2s_task(a2dp_audio_state_t audioState) {
     // If the audio is switching to "Active", wake up the I2S processing task
     if (audioState == A2DPAudioStateActive) {
 #if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
-            ESP_LOGI(BtI2sRingbufferTag, "Notifying I2S task -> Slot %d - Value 0x%"PRIu32, I2STaskNotificationIndex, I2STaskNotificationValue);
+            ESP_LOGI(BtI2sRingbufferTag, "Notifying I2S task -> Slot %" PRId32 " - Value 0x%"PRIu32, (int32_t) I2STaskNotificationIndex, I2STaskNotificationValue);
 #endif
         const BaseType_t outcome = xTaskNotifyIndexed(s_i2s_task_handle, I2STaskNotificationIndex, I2STaskNotificationValue, eSetValueWithOverwrite);
         err = outcome == pdPASS ? ESP_OK : ESP_FAIL;
@@ -683,7 +683,7 @@ static void get_dma_buffer_size_and_buffer_count_for_data_buffer_size(size_t bat
     }
     
 #if CONFIG_HOLIDAYTREE_I2S_OUTPUT_LOG
-    ESP_LOGI(BtI2sOutputTag, "DMA dma_frame_num: %lu - DMA dma_desc_num: %lu - I2S write size: %u | Batch size %u, Sample size %d, Channels %d", *pDmaFrameNum, *pDmaDescNum, *pBytesToTakeFromRingBuffer, batchSize, sampleBits, channelCount);
+    ESP_LOGI(BtI2sOutputTag, "DMA dma_frame_num: %" PRIu32 " - DMA dma_desc_num: %" PRIu32 " - I2S write size: %zu | Batch size %zu, Sample size %" PRId32 ", Channels %" PRIu8, *pDmaFrameNum, *pDmaDescNum, *pBytesToTakeFromRingBuffer, batchSize, (int32_t) sampleBits, channelCount);
 #endif
 }
 
