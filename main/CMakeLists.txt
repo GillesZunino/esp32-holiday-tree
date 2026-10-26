@@ -28,6 +28,7 @@ set(srcs
         "leds_animator/led_animator.c"
 
         "led_effects/progressive_reveal_effect.c"
+        "led_effects/bluetooth_pairing_effect.c"
 
         "main.c"
 )
