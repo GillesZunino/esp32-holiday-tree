@@ -8,6 +8,11 @@
 
 
 // LED indices on the board
+//
+//     3       2   |---------------
+//         0       | ESP32 Antena |
+//     4       1   |---------------
+//
 static const uint32_t CENTER_LED_INDEX = 0;
 
 static const uint32_t RIGHT_LED1_INDEX = 1;
