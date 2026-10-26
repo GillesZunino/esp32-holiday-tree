@@ -16,24 +16,27 @@ static const char* GpioIsrTag = "gpio_isr";
 static QueueHandle_t s_gpio_isr_dispatch_queue = NULL;
 
 
-esp_err_t gpio_events_queue_dispatch(void) {
+esp_err_t gpio_events_queue_dispatch(TickType_t wait_time) {
     QueueHandle_t dispatchQueue = s_gpio_isr_dispatch_queue;
     ESP_RETURN_ON_FALSE(dispatchQueue != NULL, ESP_ERR_INVALID_STATE, GpioIsrTag, "gpio_events_queue_dispatch() called with NULL queue - call configure_gpio_isr_dispatcher() first");
 
-    for(;;) {
-        isr_handler_fn_ptr handlerFn = NULL;
-        BaseType_t dequeueOutcome = xQueueReceive(dispatchQueue, &handlerFn, portMAX_DELAY);
-        if (dequeueOutcome == pdTRUE) {
-            if (handlerFn != NULL) {
-                handlerFn();
-            } else {
-                ESP_LOGE(GpioIsrTag, "xQueueReceive() retrieved an ISR request with NULL handler");
-            }
+    esp_err_t err = ESP_OK;
+
+    isr_handler_fn_ptr handlerFn = NULL;
+    BaseType_t dequeueOutcome = xQueueReceive(dispatchQueue, &handlerFn, wait_time);
+    if (dequeueOutcome == pdTRUE) {
+        if (handlerFn != NULL) {
+            handlerFn();
+            err = ESP_OK;
         } else {
-            ESP_LOGE(GpioIsrTag, "xQueueReceive() failed (0x%" PRIx32 ") - ISR will be dropped", (uint32_t) dequeueOutcome);
+            ESP_LOGE(GpioIsrTag, "xQueueReceive() retrieved an ISR request with NULL handler");
+            err = ESP_ERR_INVALID_ARG;
         }
+    } else {
+        err = ESP_ERR_TIMEOUT;
     }
-    return ESP_OK;
+
+    return err;
 }
 
 static void gpio_isr_handler(void* arg) {
