@@ -37,7 +37,8 @@ typedef void (*led_effect_callback_t)(led_effect_context_t* context);
 
 // Macro an LED effect can use to wait for a certain delay while listening to parent signals
 #define WAIT_AND_GOTO_ON_SIGNAL(xTicksToWait, goto_tag) do { \
-        led_effect_notification_t _notification = animator->delay_with_parent_signals((xTicksToWait)); \
+        TickType_t _xTicksToWait = (xTicksToWait); \
+        led_effect_notification_t _notification = animator->delay_with_parent_signals(_xTicksToWait); \
         if (unlikely(_notification != LedEffectNotificationNone)) { \
             notification = _notification; \
             goto goto_tag; \

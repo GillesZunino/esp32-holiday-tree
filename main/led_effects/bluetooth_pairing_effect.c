@@ -38,23 +38,24 @@ void bluetooth_pairing_led_effect(led_effect_context_t* context) {
     led_effect_notification_t notification = LedEffectNotificationNone;
     animator_cb_t* animator = &context->animator_cb;
 
+    TickType_t wait_time;
     int16_t intensity = 100;
     rgb_color_t color = BluetoothBlue;
     
     for (;;) {
         set_string_color(color, animator);
 
-        TickType_t wait_time = intensity <= 0 ? TimeOffTicks : TimePerFrameTicks;
-        WAIT_AND_GOTO_ON_SIGNAL(wait_time, notification);
-
-        if (intensity <= 0) {
+        if (intensity == 0) {
             intensity = 100;
             color = BluetoothBlue;
+            wait_time = TimeOffTicks;
         } else {
             intensity = intensity - 1;
+            wait_time = TimePerFrameTicks;
+            set_color_intensity(intensity, &color);
         }
 
-        set_color_intensity(intensity, &color);
+        WAIT_AND_GOTO_ON_SIGNAL(wait_time, notification);
 
 notification:
         if (notification == LedEffectNotificationEnd) {
