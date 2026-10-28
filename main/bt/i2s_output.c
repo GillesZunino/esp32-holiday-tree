@@ -81,7 +81,7 @@ static esp_err_t delete_i2s_channel();
 static esp_err_t start_i2s_output_task();
 static esp_err_t stop_i2s_output_task();
 
-static void i2s_task_handler(void* arg);
+static void i2s_task(void* arg);
 
 #if CONFIG_HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG
 static void log_ringbuffer_incoming_stats(uint32_t size);
@@ -254,7 +254,7 @@ static esp_err_t start_i2s_output_task() {
     // Create output task - It runs on the core not assigned to BlueDroid
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
     const uint32_t StackSize = ( CONFIG_HOLIDAYTREE_I2S_TASK_STACK_SIZE );
-    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task_handler, "ht-BT-I2S", StackSize, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task, "ht-BT-I2S", StackSize, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;
     if (err != ESP_OK) {
         ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xTaskCreate() failed");
@@ -402,7 +402,7 @@ static void log_ringbuffer_operation_stats(uint64_t startEspTime, uint64_t endEs
 #endif
 
 
-static void i2s_task_handler(void* arg) {
+static void i2s_task(void* arg) {
     for (;;) {
         // Wait for an A2DP "Audio Start" notification - The task is notified only when A2DP audio state changes from 'Paused' to 'Active'
         uint32_t ulNotificationValue = 0UL;

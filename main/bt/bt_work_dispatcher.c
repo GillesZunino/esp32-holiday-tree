@@ -29,8 +29,8 @@ static QueueHandle_t s_bt_app_task_queue = NULL;
 static TaskHandle_t s_bt_app_task_handle = NULL;
 
 
-static bool queue_workitem_internal(bluetooth_workitem_t* workItem);
-static void queue_consumer_task(void* arg);
+static bool bt_queue_workitem_internal(bluetooth_workitem_t* workItem);
+static void bt_workitem_task(void* arg);
 
 
 bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t eventId, const void* const params, size_t paramsLen) {
@@ -43,7 +43,7 @@ bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t event
         };
 
         if (paramsLen == 0) {
-            return queue_workitem_internal(&workItem);
+            return bt_queue_workitem_internal(&workItem);
         } else {
             if ((params != NULL) && (paramsLen > 0)) {
                 void* stagedParams = malloc(paramsLen);
@@ -51,7 +51,7 @@ bool queue_bluetooth_workitem(bluetooth_workitem_handler handler, uint16_t event
                     memcpy(stagedParams, params, paramsLen);
                     workItem.params = stagedParams;
 
-                    bool workQueued = queue_workitem_internal(&workItem);
+                    bool workQueued = bt_queue_workitem_internal(&workItem);
 
                     if (!workQueued) {
                         free(stagedParams);
@@ -79,7 +79,7 @@ esp_err_t start_bluetooth_dispatcher_task() {
 
     // Run the I2S task on the non Bluetooth core
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
-    BaseType_t taskCreated = xTaskCreatePinnedToCore(queue_consumer_task, "ht-BT-dispatch", 2560, NULL, 10, &s_bt_app_task_handle, appCoreId);
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(bt_workitem_task, "ht-BT-dispatch", 2560, NULL, 10, &s_bt_app_task_handle, appCoreId);
     if (taskCreated != pdPASS) {
         ESP_LOGE(BtWorkQueueTag, "%s() xTaskCreate() failed", __func__);
 
@@ -118,7 +118,7 @@ esp_err_t stop_bluetooth_dispatcher_task() {
     return ESP_OK;
 }
 
-static bool queue_workitem_internal(bluetooth_workitem_t* workItem) {
+static bool bt_queue_workitem_internal(bluetooth_workitem_t* workItem) {
     bool enqueued = xQueueSendToBack(s_bt_app_task_queue, workItem, pdMS_TO_TICKS(10)) == pdTRUE;
     if (!enqueued) {
         ESP_LOGE(BtWorkQueueTag, "%s xQueueSendToBack() failed", __func__);
@@ -127,7 +127,7 @@ static bool queue_workitem_internal(bluetooth_workitem_t* workItem) {
     return enqueued;
 }
 
-static void queue_consumer_task(void* arg) {
+static void bt_workitem_task(void* arg) {
     for (;;) {
         bluetooth_workitem_t workItem;
         bool itemDequeued = xQueueReceive(s_bt_app_task_queue, &workItem, (TickType_t) portMAX_DELAY) == pdTRUE;
