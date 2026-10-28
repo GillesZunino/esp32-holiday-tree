@@ -77,6 +77,21 @@ static void on_momentary_button_pressed(void) {
 }
 
 
+
+static esp_err_t start_bluetooth_pairing_led_effect() {
+    return start_led_string_effect(bluetooth_pairing_effect_handle, NULL);
+}
+
+static esp_err_t start_progressive_reveal_led_effect() {
+    return start_led_string_effect(progressive_reveal_effect_handle, NULL);
+}
+
+static esp_err_t stop_led_effect() {
+    return stop_current_led_string_effect();
+}
+
+
+
 void app_main(void) {
     // Log compile time options
     ESP_LOGI(MainTag, "%s", CompileTimeOptions);
@@ -92,35 +107,33 @@ void app_main(void) {
     // Configure GPIO pin interrupts
     ESP_ERROR_CHECK(configure_gpio_isr_dispatcher());
 
-    // Configure Bluetooth Classic and start A2DP profile for tree sound player
-    ESP_ERROR_CHECK(configure_bluetooth());
-
     // Configure tree momentary button
     ESP_ERROR_CHECK(configure_momentary_button(ButtonGPIONum, &on_momentary_button_pressed));
 
     // Configure tree lights
     ESP_ERROR_CHECK(configure_led_string(LedDataGPIONum, LedSwitchGPIONum));
 
+    // Initialize LED effects
+    ESP_ERROR_CHECK(initialize_led_string_effect(progressive_reveal_led_effect, &progressive_reveal_effect_handle));
+    ESP_ERROR_CHECK(initialize_led_string_effect(bluetooth_pairing_led_effect, &bluetooth_pairing_effect_handle));
+
+    // Configure Bluetooth Classic and start AVRC+A2DP profile for tree sound player
+    ESP_ERROR_CHECK(configure_bluetooth());
+
     bool effect = false;
 
     do {
-        stop_current_led_string_effect();
-
         if (effect) {
-            
-            free_led_string_effect(bluetooth_pairing_effect_handle);
-            ESP_ERROR_CHECK(initialize_led_string_effect(progressive_reveal_led_effect, &progressive_reveal_effect_handle));
-            ESP_ERROR_CHECK(start_led_string_effect(progressive_reveal_effect_handle, NULL));
+            ESP_ERROR_CHECK(start_progressive_reveal_led_effect());
         } else {
-            free_led_string_effect(progressive_reveal_effect_handle);
-            ESP_ERROR_CHECK(initialize_led_string_effect(bluetooth_pairing_led_effect, &bluetooth_pairing_effect_handle));
-            ESP_ERROR_CHECK(start_led_string_effect(bluetooth_pairing_effect_handle, NULL));
+            ESP_ERROR_CHECK(start_bluetooth_pairing_led_effect());
         }
         effect = !effect;
 
         // Dispatch GPIO events - If a GPIO event is received, the handler will execute on this task
-        gpio_events_queue_dispatch(pdMS_TO_TICKS(20000));
+        ESP_ERROR_CHECK(gpio_events_queue_dispatch(pdMS_TO_TICKS(20000)));
 
+        ESP_ERROR_CHECK(stop_led_effect());
     } while (true);
 
     //
