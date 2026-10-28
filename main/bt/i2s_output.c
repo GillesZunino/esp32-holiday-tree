@@ -254,7 +254,7 @@ static esp_err_t start_i2s_output_task() {
     // Create output task - It runs on the core not assigned to BlueDroid
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
     const uint32_t StackSize = ( CONFIG_HOLIDAYTREE_I2S_TASK_STACK_SIZE );
-    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task, "ht-BT-I2S", StackSize, NULL, configMAX_PRIORITIES - 3, &s_i2s_task_handle, appCoreId);
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(i2s_task, "ht-BT-I2S", StackSize, NULL, CONFIG_HOLIDAYTREE_I2S_TASK_PRIORITY, &s_i2s_task_handle, appCoreId);
     err = taskCreated == pdPASS ? ESP_OK : ESP_FAIL;
     if (err != ESP_OK) {
         ESP_LOGE(BtI2sOutputTag, "start_i2s_output_task() - xTaskCreate() failed");

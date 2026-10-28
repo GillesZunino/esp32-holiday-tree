@@ -79,7 +79,7 @@ esp_err_t start_bluetooth_dispatcher_task() {
 
     // Run the I2S task on the non Bluetooth core
     const BaseType_t appCoreId = CONFIG_BT_BLUEDROID_PINNED_TO_CORE == PRO_CPU_NUM ? APP_CPU_NUM : PRO_CPU_NUM;
-    BaseType_t taskCreated = xTaskCreatePinnedToCore(bt_workitem_task, "ht-BT-dispatch", 2560, NULL, 10, &s_bt_app_task_handle, appCoreId);
+    BaseType_t taskCreated = xTaskCreatePinnedToCore(bt_workitem_task, "ht-BT-dispatch", CONFIG_HOLIDAYTREE_BLUETOOTH_TASK_STACK_SIZE, NULL, CONFIG_HOLIDAYTREE_BLUETOOTH_TASK_PRIORITY, &s_bt_app_task_handle, appCoreId);
     if (taskCreated != pdPASS) {
         ESP_LOGE(BtWorkQueueTag, "%s() xTaskCreate() failed", __func__);
 

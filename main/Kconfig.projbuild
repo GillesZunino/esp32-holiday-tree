@@ -41,12 +41,45 @@ menu "Holiday Tree"
         help
             Static pin to request when pairing
 
+    config HOLIDAYTREE_BLUETOOTH_TASK_PRIORITY
+    int "Bluetooth task priority"
+    range 0 24
+    default 10
+    help
+        Priority of the Bluetooth task (ht-BT-dispatch) with 0 (lowest, idle) to configMAX_PRIORITIES - 1 (highest)
+
+    config HOLIDAYTREE_BLUETOOTH_TASK_STACK_SIZE
+        int "Bluetooth task stack size"
+        default 2560
+        help
+            Stack size for Bluetooth task (ht-BT-dispatch)
+
+    config HOLIDAYTREE_I2S_TASK_PRIORITY
+    int "I2S task priority"
+    range 0 24
+    default 22
+    help
+        Priority of the I2S output task (ht-BT-I2S) with 0 (lowest, idle) to configMAX_PRIORITIES - 1 (highest)
+
     config HOLIDAYTREE_I2S_TASK_STACK_SIZE
         int "I2S task stack size"
         default 2048 if HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG = n
         default 4096 if HOLIDAYTREE_DETAILED_I2S_DATA_PROCESSING_LOG = y
         help
-            Stack size for I2S task
+            Stack size for I2S task (ht-BT-I2S)
+
+    config HOLIDAYTREE_LED_ANIMATOR_TASK_PRIORITY
+        int "LED Animator task priority"
+        range 0 24
+        default 10
+        help
+            Priority of the LED Animator task (ht-LED-Animator) with 0 (lowest, idle) to configMAX_PRIORITIES - 1 (highest)
+
+    config HOLIDAYTREE_LED_ANIMATOR_TASK_STACK_SIZE
+        int "LED Animator task stack size"
+        default 3072
+        help
+            Stack size for LED Animator task (ht-LED-Animator)
 
     config  HOLIDAYTREE_LEDS_LOG
         bool "Log LEDs animation processing"

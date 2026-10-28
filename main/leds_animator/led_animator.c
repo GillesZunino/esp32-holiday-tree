@@ -111,7 +111,7 @@ esp_err_t start_led_string_effect(led_effect_handle_t handle, void* context) {
     xEventGroupClearBits(handle->led_task_event_group_handle, EffectTaskEndedEventGroupBit | EffectEndEventGroupBit);
 
     // Spawn the task to run the LED animation effect
-    BaseType_t outcome = xTaskCreate(animate_led_task, "ht-leds-anim", 3072, handle, 10, &s_animate_led_task_handle);
+    BaseType_t outcome = xTaskCreate(animate_led_task, "ht-leds-anim", CONFIG_HOLIDAYTREE_LED_ANIMATOR_TASK_STACK_SIZE, handle, CONFIG_HOLIDAYTREE_LED_ANIMATOR_TASK_PRIORITY, &s_animate_led_task_handle);
     if (outcome != pdPASS) {
         s_animate_led_task_handle = NULL;
         s_current_led_effect_handle = NULL;
